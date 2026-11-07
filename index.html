@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランぬのわくわく古戦場！</title>
+    
+    <link rel="apple-touch-icon" href="avatar_2.png">
+    
+    <meta property="og:title" content="ランぬのわくわく古戦場！">
+    <meta property="og:description" content="古戦場貢献度を報告してランぬを着せ替えよう！">
+    <meta property="og:image" content="https://lanchangame.github.io/wakuwakukosenjo/twitter.png">
+    <meta property="og:url" content="https://lanchangame.github.io/wakuwakukosenjo/">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://lanchangame.github.io/wakuwakukosenjo/twitter.png">
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --accent-light: #ebf5fb;
+            --bg: #ecf0f1;
+            --text: #333;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        #start-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        #logo-img {
+            max-width: 100%;
+            max-height: 160px;
+            margin-bottom: 20px;
+            object-fit: contain;
+        }
+
+        #info-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        #info-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 85%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+        #info-content h2 {
+            color: var(--primary);
+            font-size: 18px;
+            margin-top: 25px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 5px;
+        }
+        #info-content h2:first-child { margin-top: 0; }
+        #info-content p { font-size: 14px; line-height: 1.6; margin-top: 10px; color: #555; }
+        .close-btn { display: block; margin: 30px auto 0; }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+        }
+        .custom-modal-content {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 80%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+        .custom-modal-content p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text);
+            white-space: pre-wrap;
+            margin-top: 0;
+        }
+
+             #game-container {
+            display: flex;
+            flex-direction: column; 
+            gap: 20px;
+            width: 950px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            height: 90vh; /* Changed from max-height to height for fixed PC layout */
+            max-height: 800px;
+            overflow: hidden; /* Prevent container from expanding */
+        }
+        
+        #content-wrapper {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0; /* Important for inner scroll */
+        }
+
+        #left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+            width: 360px;
+            height: 100%;
+        }
+
+        #avatar-area {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            border: 2px solid #94a3b8;
+            border-radius: 10px;
+            background-color: #fff;
+            flex-shrink: 0;
+        }
+        .avatar-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        
+        #ui-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 10px;
+            min-height: 0;
+        }
+
+        #unlocked-list, #locked-list {
+            flex: 1;
+            overflow-y: auto; 
+            padding-right: 5px;
+            min-height: 0; 
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.1s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:hover:not(:disabled) {
+            background-color: #34495e;
+            }
+        button:active:not(:disabled) {
+            transform: scale(0.97);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #main-nav {
+            display: flex;
+            width: 100%;
+            border-bottom: 3px solid var(--accent);
+            margin-bottom: 5px;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            background-color: #e2e8f0;
+            color: var(--secondary);
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .tab-item:hover {
+            background-color: #cbd5e1;
+        }
+        .tab-item.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        #sub-nav {
+            display: none;
+            width: 100%;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .sub-tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            background: #e2e8f0;
+            color: var(--secondary);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            box-shadow: none;
+            transform: none !important;
+            transition: none !important;
+        }
+        .sub-tab-btn:hover {
+            background: #cbd5e1;
+            transform: none !important;
+        }
+        .sub-tab-btn:active {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .sub-tab-btn.active {
+            background: var(--accent);
+            color: white;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .cat-tabs-wrapper {
+            display: flex;
+            width: 100%;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        .cat-tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            background-color: #e2e8f0;
+            color: var(--secondary);
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .cat-tab-item:hover {
+            background-color: #cbd5e1;
+        }
+        .cat-tab-item.active {
+            background-color: var(--accent-light);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .sub-cat-tabs-wrapper {
+            display: none;
+            width: 100%;
+            gap: 8px;
+            margin-bottom: 15px;
+            margin-top: -5px; 
+            padding: 8px;
+            background-color: var(--accent-light);
+            border: 2px solid var(--accent); 
+            border-radius: 8px;
+            box-sizing: border-box;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .sub-cat-tabs-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 16.66%; 
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid var(--accent);
+        }
+        .sub-cat-tab-item {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: var(--secondary);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 8px 0;
+            transition: 0.2s;
+        }
+        .sub-cat-tab-item:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+        .sub-cat-tab-item.active {
+            color: white;
+            background-color: var(--accent);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        #section-top, #section-room, #section-shop, #section-data {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; 
+            flex: 1;
+            min-height: 0;
+        }
+
+        #section-top {
+            overflow-y: auto;
+        }
+
+        #section-data {
+            overflow-y: auto;
+        }
+
+        #ui-area.show-top #section-room, 
+        #ui-area.show-top #section-shop, 
+        #ui-area.show-top #section-data { display: none !important; }
+        
+        #ui-area.show-room #section-top, 
+        #ui-area.show-room #section-shop,
+        #ui-area.show-room #section-data { display: none !important; }
+
+        #ui-area.show-shop #section-top, 
+        #ui-area.show-shop #section-room,
+        #ui-area.show-shop #section-data { display: none !important; }
+
+        #ui-area.show-data #section-top,
+        #ui-area.show-data #section-room,
+        #ui-area.show-data #section-shop { display: none !important; }
+
+        #game-container.mode-dressup #dressup-header {
+            display: flex !important;
+        }
+        #game-container.mode-data #left-column {
+            display: none;
+        }
+
+        #avatar-save-btn-container {
+            display: block;
+            flex-shrink: 0;
+        }
+        
+        #game-container.mode-dressup #avatar-save-btn-container {
+            display: none !important;
+        }
+        
+        #game-container.mode-data #avatar-save-btn-container {
+            display: none !important;
+        }
+        
+        @media (min-width: 769px) {
+            #game-container.mode-top #avatar-save-btn-container {
+                margin-top: auto;
+            }
+        }
+        #lancelot-area {
+            display: flex;
+            gap: 10px;
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid var(--accent);
+            flex-shrink: 0;
+            position: relative; 
+        }
+        #lancelot-img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            flex-shrink: 0;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+        #message-box {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            white-space: pre-wrap;
+        }
+        
+        .status-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .status-card {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .status-card .label { font-size: 12px; color: #64748b; }
+        .status-card .val { font-size: 16px; color: var(--primary); }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: stretch; 
+            flex-shrink: 0;
+        }
+        input[type="number"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            flex: 1;
+        }
+        
+        #cooldown-text { 
+            color: #e74c3c; 
+            font-size: 14px; 
+            font-weight: bold; 
+            min-height: 20px; 
+            display: flex; 
+            align-items: center; 
+        }
+        
+        .shop-area {
+            border-top: none; 
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        #section-room .shop-area, 
+        #section-shop .shop-area:last-child {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .shop-category {
+            margin-bottom: 15px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 16px; }
+        h4 { margin: 0 0 10px 0; color: var(--secondary); font-size: 14px; }
+        
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            padding-top: 5px;
+        }
+        .item-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            border-radius: 8px;
+            border: 1px solid #94a3b8;
+            background-color: #ffffff;
+            color: var(--secondary);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .item-card:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            border-color: var(--accent);
+        }
+        .item-card:active:not(:disabled) {
+            background-color: #ffffff;
+            transform: scale(0.97);
+        }
+        .item-card.active-equip {
+            background-color: var(--primary);
+            border: 2px solid var(--primary);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .item-card.active-equip:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .item-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .item-card .no-image {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: normal;
+        }
+        .item-card span {
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-word;
+            pointer-events: none;
+        }
+        
+        .item-btn, .equip-btn {
+            margin: 4px;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #94a3b8;
+            background-color: #ffffff;
+            color: var(--secondary);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .item-btn:hover:not(:disabled), .equip-btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            border-color: var(--accent);
+        }
+        .item-btn:active:not(:disabled), .equip-btn:active:not(:disabled) {
+            background-color: #ffffff;
+            transform: scale(0.97);
+        }
+        .equip-btn.active-equip {
+            background-color: var(--primary);
+            border: 2px solid var(--primary);
+            color: white;
+            font-weight: bold;
+            transform: none !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .equip-btn.active-equip:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .equip-btn.active-equip:active:not(:disabled) {
+            background-color: var(--primary);
+            transform: none !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .equip-btn.active-equip:active:not(:disabled) {
+        background-color: var(--primary);
+        transform: none !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+
+@media (min-width: 769px) {
+    #game-container.mode-dressup #shop-preview-image-box {
+        width: 300px !important;
+        height: 400px !important;
+        margin: 0 auto;
+    }
+}       
+        @media (max-width: 768px) {
+            #game-container {
+                height: auto;
+                max-height: none;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 10px;
+                gap: 10px;
+                border: none;
+                border-radius: 0;
+            }
+            #content-wrapper {
+                flex-direction: column;
+                overflow: visible;
+                gap: 10px;
+            }
+            body { padding: 0 0 50px 0; }
+            
+            #left-column {
+                width: 100%;
+                height: auto;
+            }
+
+            #avatar-area {
+                width: 100%;
+                max-width: 252px;
+                aspect-ratio: 3 / 4;
+                height: auto;
+                margin: 0 auto;
+            }
+
+            #game-container.mode-dressup #avatar-area {
+                max-width: 150px; 
+                aspect-ratio: 3 / 4;
+                height: auto;
+                margin: 0 auto;
+                border: 2px solid #cbd5e1;
+            }
+            
+            #game-container.mode-dressup #shop-preview-area {
+                width: 100% !important;
+                margin: 0 auto;
+                padding: 0 !important;
+            }
+            #game-container.mode-dressup #shop-preview-image-box {
+                width: 100% !important;
+                max-width: 150px !important;
+                aspect-ratio: 3 / 4 !important;
+                height: auto !important;
+                margin: 0 auto;
+                border: 2px solid #cbd5e1;
+            }
+
+            #unlocked-list,
+            #locked-list {
+                max-height: 40vh;
+                overflow-y: auto;
+                min-height: 0;
+            }
+
+            #game-container.mode-dressup #unlocked-list,
+            #game-container.mode-dressup #locked-list {
+                border-top: 1px dashed #cbd5e1;
+                padding-top: 10px;
+                margin-top: 5px;
+            }
+
+            #ui-area {
+                overflow-y: visible;
+                padding-right: 0;
+            }
+            .status-container { gap: 5px; }
+            .status-card { padding: 8px 5px; }
+            .status-card .label { font-size: 10px; }
+            .status-card .val { font-size: 14px; }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @keyframes purchaseEffect {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="start-screen">
+    <div id="start-box">
+        <img src="logo.png" alt="タイトルロゴ" id="logo-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMTAiIGhlaWdodD0iNjAiPjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iNjAiIGZpbGw9IiNjY2MiLz48dGV4dCB4PSIxMDUiIHk9IjM1IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+bG9nby5wbmc8L3RleHQ+PC9zdmc+'">
+        <p style="line-height: 1.6; margin-bottom: 25px; font-size: 15px; color: #555;">
+            古戦場の累計貢献度を報告して<br>
+            着せ替えを楽しもう！<br>
+            
+            <img src="dsfdsd.png" alt="アバター" style="max-width: 180px; height: auto; display: block; margin: 15px auto;">
+        </p>
+        
+        <button onclick="showInfo()" style="width: 260px; font-size: 18px; padding: 12px 0; margin-bottom: 15px; background-color: var(--accent);">はじめに読んでね</button><br>
+        <button onclick="startGame()" style="width: 260px; font-size: 18px; padding: 12px 0; background-color: var(--primary);">ゲームスタート</button>
+    </div>
+</div>
+
+<div id="info-modal">
+    <div id="info-content"></div>
+</div>
+
+<div id="game-container" class="mode-top">
+    
+    <div id="main-nav">
+        <div class="tab-item active" onclick="switchMainTab('top')">トップ</div>
+        <div class="tab-item" onclick="switchMainTab('dressup')">着せ替え</div>
+        <div class="tab-item" onclick="switchMainTab('data')">データ</div>
+    </div>
+
+    <div id="content-wrapper">
+    
+        <div id="left-column">
+            
+            <div id="dressup-header" style="display: none; flex-direction: column; gap: 10px;">
+                <div class="status-card" style="padding: 10px; flex-direction: row; gap: 10px; justify-content: center; align-items: center;">
+                    <span class="label" style="font-size: 12px; color: #64748b; font-weight: bold;">🪙 所持コイン</span>
+                    <span class="val" id="val-coins-dressup" style="font-size: 18px; color: var(--primary); font-weight: bold; display: inline;">0</span>
+                </div>
+                <div id="sub-nav" style="display: flex; margin-bottom: 0;">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('room')">クローゼット</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('shop')">ショップ</button>
+                </div>
+            </div>
+
+            <div id="avatar-area">
+                <img id="layer-bg" class="avatar-layer" style="z-index: 1; display:none;" src="" alt="背景">
+                <img id="layer-base" class="avatar-layer" style="z-index: 2;" src="avatar.png" alt="素体">
+            </div>
+            
+            <div id="avatar-save-btn-container" style="width: 100%;">
+                <button onclick="saveAvatarImage()" style="width: 100%; background-color: var(--accent);">このランぬを保存する</button>
+            </div>
+            
+            <div id="shop-preview-area" class="shop-area" style="display: none; width: 100%; flex-direction: column; gap: 10px; flex-shrink: 0;">
+                <div id="shop-preview-image-box" style="width: 100%; height: 480px; border: 2px solid #94a3b8; border-radius: 10px; overflow: hidden; position: relative; background-color: #fff; flex-shrink: 0;">
+                    <div id="preview-img-container" style="width: 100%; height: 100%; position: relative; background: rgba(255, 255, 255, 0.7); background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;">
+                        <img id="preview-layer-bg" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1;">
+                        <img id="preview-layer-base" src="avatar.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; display: block; z-index: 2;">
+                        <img id="preview-img" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 3;">
+                    </div>
+                </div>
+                <div style="padding: 10px; display: flex; justify-content: center; align-items: center; border: 2px solid #94a3b8; border-radius: 10px; background-color: #f8fafc; flex-shrink: 0;">
+                    <button id="btn-buy-preview" disabled style="background-color: #27ae60; color: white; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 80%;" onclick="buyPreviewItem()">衣装を選んでくれ！</button>
+                </div>
+            </div>
+            
+        </div>
+
+        <div id="ui-area" class="show-top">
+
+            <div id="section-top">
+                <div id="lancelot-area">
+                    <img id="lancelot-img" src="image/lancelot/lancelot_1.png" alt="ランスロット" onclick="pokeLancelot()" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNDAiIHk9IjQ1IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
+                    <div id="message-box"></div>
+                </div>
+
+                <div class="status-container">
+                    <div class="status-card">
+                        <span class="label">🌟 貢献度</span>
+                        <span class="val" id="val-total">0</span>
+                    </div>
+                    <div class="status-card">
+                        <span class="label">📣 報告回数</span>
+                        <span class="val"><span id="val-reports">0</span>回</span>
+                    </div>
+                    <div class="status-card">
+                        <span class="label">🪙 コイン</span>
+                        <span class="val" id="val-coins">0</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="number" id="input-score" placeholder="現在の累計貢献度を入力" onkeydown="if(['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();" disabled>
+                    <div style="display: grid; grid-auto-rows: 1fr; gap: 10px; flex-shrink: 0;">
+                        <button id="btn-report" onclick="reportScore()" style="width: 100%; height: 100%;" disabled>報告する</button>
+                        <button id="btn-fix" onclick="fixScore()" style="width: 100%; height: 100%; background-color: #f39c12;" disabled>貢献度修正<br><span style="font-size:10px;">（コインは増加しません。）</span></button>
+                        <button id="meat-mode-entry" onclick="openMeatMode()" style="width: 100%; height: 100%; background-color: #c0392b;">🥩 肉集めモード</button>
+                    </div>
+                </div>
+                <div id="cooldown-text"></div>
+                <div id="meat-mode-panel" style="display: none;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; gap: 10px;">
+                    <button onclick="shareOnX()" style="background-color: #0f1419; flex: 1;">Xでシェア</button>
+                    <button onclick="backToStart()" style="background-color: #64748b; flex: 1;">↩️スタート画面に戻る</button>
+                </div>
+            </div>
+
+            <div id="section-room">
+                <div class="shop-area" style="padding-top: 5px; margin-top: 0;">
+                    
+                    <div class="cat-tabs-wrapper" id="room-category-tabs">
+                        <div class="cat-tab-item active" id="cat-clothes-room" onclick="changeRoomCategory('clothes')">衣装</div>
+                        <div class="cat-tab-item" id="cat-acc-room" onclick="changeRoomCategory('acc')">アクセサリー</div>
+                        <div class="cat-tab-item" id="cat-bg-room" onclick="changeRoomCategory('bg')">背景</div>
+                    </div>
+                    
+                    <div class="sub-cat-tabs-wrapper" id="room-sub-tabs" style="display: flex;">
+                        <div class="sub-cat-tab-item active" id="tab-setup-room" onclick="changeRoomTab('setup')">セットアップ</div>
+                        <div class="sub-cat-tab-item" id="tab-tops-room" onclick="changeRoomTab('tops')">トップス</div>
+                        <div class="sub-cat-tab-item" id="tab-bottoms-room" onclick="changeRoomTab('bottoms')">ボトムス</div>
+                    </div>
+
+                    <div class="sub-cat-tabs-wrapper" id="room-acc-tabs" style="display: none;">
+                        <div class="sub-cat-tab-item active" id="acc-head-room" onclick="changeRoomAccTab('head')">頭</div>
+                        <div class="sub-cat-tab-item" id="acc-hand-room" onclick="changeRoomAccTab('hand')">手</div>
+                        <div class="sub-cat-tab-item" id="acc-foot-room" onclick="changeRoomAccTab('foot')">足</div>
+                        <div class="sub-cat-tab-item" id="acc-other-room" onclick="changeRoomAccTab('other')">その他</div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px; margin-bottom: 10px;">
+                        <p style="font-size: 12px; color: #666; margin: 0;">※着用中のアイテムを再度押すと外せます</p>
+                        <button onclick="randomEquip()" style="
+                            font-size: 11px;
+                            padding: 5px 8px;
+                            background-color: #64748b;
+                            border-radius: 6px;
+                            box-shadow: none;
+                            margin: 0;
+                            white-space: nowrap;
+                        ">
+                            🎲 おまかせ
+                        </button>
+                    </div>
+                    <div id="unlocked-list"></div>
+                </div>
+            </div>
+
+            <div id="section-shop">
+                <div class="cat-tabs-wrapper" id="shop-category-tabs">
+                    <div class="cat-tab-item active" id="cat-clothes-shop" onclick="changeShopCategory('clothes')">衣装</div>
+                    <div class="cat-tab-item" id="cat-acc-shop" onclick="changeShopCategory('acc')">アクセサリー</div>
+                    <div class="cat-tab-item" id="cat-bg-shop" onclick="changeShopCategory('bg')">背景</div>
+                </div>
+                
+                <div class="sub-cat-tabs-wrapper" id="shop-sub-tabs" style="display: flex;">
+                    <div class="sub-cat-tab-item active" id="tab-setup-shop" onclick="changeShopTab('setup')">セットアップ</div>
+                    <div class="sub-cat-tab-item" id="tab-tops-shop" onclick="changeShopTab('tops')">トップス</div>
+                    <div class="sub-cat-tab-item" id="tab-bottoms-shop" onclick="changeShopTab('bottoms')">ボトムス</div>
+                </div>
+
+                <div class="sub-cat-tabs-wrapper" id="shop-acc-tabs" style="display: none;">
+                    <div class="sub-cat-tab-item active" id="acc-head-shop" onclick="changeShopAccTab('head')">頭</div>
+                    <div class="sub-cat-tab-item" id="acc-hand-shop" onclick="changeShopAccTab('hand')">手</div>
+                    <div class="sub-cat-tab-item" id="acc-foot-shop" onclick="changeShopAccTab('foot')">足</div>
+                    <div class="sub-cat-tab-item" id="acc-other-shop" onclick="changeShopAccTab('other')">その他</div>
+                </div>
+
+                <div class="shop-area">
+                    <div id="locked-list"></div>
+                </div>
+
+            </div>
+
+            <div id="section-data">
+                <div style="padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #cbd5e1;">
+                    <h3 style="margin-top: 0; color: var(--primary);">データ引継ぎ /バックアップ</h3>
+                    
+                    <div style="font-size: 13px; line-height: 1.6; margin-bottom: 20px; color: #555;">
+                        <strong>【データの取り扱いについて】</strong><br>
+                        当ゲームのセーブデータは、お使いのブラウザのローカルストレージ（端末内）にのみ保存され、外部サーバ等への送信は一切行われません。<br><br>
+                        ブラウザの履歴やキャッシュを削除した場合、またはシークレットモードを利用した場合はデータが消去されてしまいます。<br><br>
+                        データ出力を行うと、セーブデータが消えた際や端末引き継ぎの際に同コードをペーストすることで、データの復元が可能です。定期的なデータ出力によるバックアップをおすすめします。<br><br>
+                        また、事故防止のためiOS版をお使いの場合は『ホーム画面に追加』機能の利用を推奨します。
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="exportData()" style="padding: 12px; font-size: 14px; flex: 1; background-color: #64748b;">データ出力(コピー)</button>
+                        <button onclick="importData()" style="padding: 12px; font-size: 14px; flex: 1; background-color: var(--primary);">データ読込</button>
+                    </div>
+                    <textarea id="backup-code" placeholder="出力されたコードがここに表示されます。復元時はコードを貼り付けて「データ読込」を押してください。" style="width: 100%; height: 80px; margin-top: 15px; padding: 10px; box-sizing: border-box; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; resize: none;"></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="custom-alert-modal" class="custom-modal">
+    <div class="custom-modal-content">
+        <p id="custom-alert-message"></p>
+        <button onclick="hideCustomAlert()" style="background-color: var(--primary);">OK</button>
+    </div>
+</div>
+
+<div id="custom-confirm-modal" class="custom-modal">
+    <div class="custom-modal-content">
+        <p id="custom-confirm-message"></p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button id="custom-confirm-yes" style="background-color: var(--accent); flex: 1;">はい</button>
+            <button onclick="hideCustomConfirm()" style="background-color: #64748b; flex: 1;">いいえ</button>
+        </div>
+    </div>
+</div>
+
+<script src="items.js"></script>
+<script src="messages.js"></script>
+<script src="info.js"></script>
+<script src="meat.js"></script>
+<script>
+    function showInfo() {
+        document.getElementById('info-modal').style.display = 'flex';
+    }
+    function hideInfo() {
+        document.getElementById('info-modal').style.display = 'none';
+    }
+
+    function showCustomAlert(msg, onClose) {
+        document.getElementById('custom-alert-message').innerText = msg;
+        window._alertCallback = onClose;
+        document.getElementById('custom-alert-modal').style.display = 'flex';
+    }
+    function hideCustomAlert() {
+        document.getElementById('custom-alert-modal').style.display = 'none';
+        if (window._alertCallback) {
+            window._alertCallback();
+            window._alertCallback = null;
+        }
+    }
+
+    function showCustomConfirm(msg, onConfirm) {
+        document.getElementById('custom-confirm-message').innerText = msg;
+        const yesBtn = document.getElementById('custom-confirm-yes');
+        yesBtn.onclick = () => {
+            hideCustomConfirm();
+            onConfirm();
+        };
+        document.getElementById('custom-confirm-modal').style.display = 'flex';
+    }
+
+    function hideCustomConfirm() {
+        document.getElementById('custom-confirm-modal').style.display = 'none';
+    }
+
+    // 保存する画像名は変更せず、読み込み時だけ整理後の場所へ変換する。
+    function getItemImagePath(file) {
+        if (typeof file !== 'string') return file;
+        if (/^lancelot(?:_[^/\\]+)?\.png$/.test(file)) return `image/lancelot/${file}`;
+        const match = file.match(/^(acc|bg|tops|bottoms|clothes|meat)_[^/\\]+\.png$/);
+        return match ? `images/${match[1]}/${file}` : file;
+    }
+
+    const categoryNames = { setup: "セットアップ", tops: "トップス", bottoms: "ボトムス", acc: "アクセサリー", bg: "背景" };
+    
+    const defaultEquip = { setup: '', tops: '', bottoms: '', acc: [], bg: '' };
+    let currentEquip = { setup: '', tops: '', bottoms: '', acc: [], bg: '' };
+
+    let equipOrder = [];
+
+    const SAVE_VERSION = 1;
+    const INITIAL_COINS = 2000;
+    const FREE_GIFT_IDS = ['tops56', 'acc249', 'bg93', 'bg94'];
+
+    const defaultState = {
+        version: SAVE_VERSION, 
+        totalScore: 0,
+        reportCount: 0,
+        coins: INITIAL_COINS,
+        affection: 0,
+        lastReportTime: 0,
+        highestReportedScore: 0,
+        lastLoginTime: 0,
+        unlocked: {},
+        hasReceivedSecretPresent: false,
+        meatTotal: 0,
+        highestMeatTotal: 0,
+        meatReportCount: 0,
+        meatRewardReceived: {},
+        meatPendingRewards: {},
+        meatCollection: {},
+        meatGiftCount: 0,
+        meatBoxProgress: 0,
+        meatLastReportTime: 0
+    };
+
+    let state = { ...defaultState, unlocked: {} };
+
+    let currentMode = 'top'; 
+    let currentSubTab = 'room';
+    
+    let currentRoomCategory = 'clothes';
+    let currentRoomTab = 'setup';
+    let currentRoomAccTab = 'head';
+    
+    let currentShopCategory = 'clothes';
+    let currentShopTab = 'setup';
+    let currentShopAccTab = 'head';
+
+    const COOLDOWN_MS = 15 * 60 * 1000;
+    let previewTarget = null;
+    let timerInterval = null;
+    let typeWriterTimeout = null;
+
+    let currentLancelotImg = 'lancelot_1.png';
+    let fixScoreCount = 0;
+
+    let afkTimer = null;
+    let isGameStarted = false;
+
+    let pokeCount = 0;
+    let pokeTimer = null;
+
+    let lastLoginAction = null;
+
+    const SAVE_KEY_STATE = 'kosenjo_save_state';
+    const SAVE_KEY_EQUIP = 'kosenjo_save_equip';
+    const SAVE_KEY_EQUIP_ORDER = 'kosenjo_save_equip_order';
+
+    function saveGame() {
+        localStorage.setItem(SAVE_KEY_STATE, JSON.stringify(state));
+        localStorage.setItem(SAVE_KEY_EQUIP, JSON.stringify(currentEquip));
+        localStorage.setItem(SAVE_KEY_EQUIP_ORDER, JSON.stringify(equipOrder));
+    }
+
+    function normalizeEquip(loadedEquip) {
+        let norm = { ...defaultEquip, ...loadedEquip };
+        if (loadedEquip.clothes) {
+            norm.setup = loadedEquip.clothes;
+            delete norm.clothes;
+        }
+        if (typeof norm.setup !== 'string') norm.setup = '';
+        if (typeof norm.tops !== 'string') norm.tops = '';
+        if (typeof norm.bottoms !== 'string') norm.bottoms = '';
+        if (typeof norm.bg !== 'string') norm.bg = '';
+        
+        if (typeof norm.acc === 'string') {
+            norm.acc = norm.acc === '' ? [] : [norm.acc];
+        } else if (!Array.isArray(norm.acc)) {
+            norm.acc = [];
+        } else {
+            norm.acc = norm.acc.filter(item => typeof item === 'string');
+        }
+        return norm;
+    }
+
+    function initEquipOrder() {
+        equipOrder = [];
+        if (currentEquip.setup) equipOrder.push({type: 'setup', file: currentEquip.setup});
+        if (currentEquip.bottoms) equipOrder.push({type: 'bottoms', file: currentEquip.bottoms});
+        if (currentEquip.tops) equipOrder.push({type: 'tops', file: currentEquip.tops});
+        if (currentEquip.acc && currentEquip.acc.length > 0) {
+            currentEquip.acc.forEach(a => equipOrder.push({type: 'acc', file: a}));
+        }
+    }
+
+    function isValidState(s) {
+        if (!s || typeof s !== 'object') return false;
+        if (typeof s.totalScore !== 'number') return false;
+        if (typeof s.reportCount !== 'number') return false;
+        if (typeof s.coins !== 'number') return false;
+        if (typeof s.affection !== 'number') return false;
+        if (typeof s.lastReportTime !== 'number') return false;
+        if (!s.unlocked || typeof s.unlocked !== 'object') return false;
+        return true;
+    }
+
+    function loadGame() {
+        const savedState = localStorage.getItem(SAVE_KEY_STATE);
+        const savedEquip = localStorage.getItem(SAVE_KEY_EQUIP);
+        const savedEquipOrder = localStorage.getItem(SAVE_KEY_EQUIP_ORDER);
+        
+        if (savedState) {
+            try {
+                const parsedState = JSON.parse(savedState);
+                state = { ...defaultState, ...parsedState };
+                if (parsedState.unlocked) {
+                    state.unlocked = { ...parsedState.unlocked };
+                }
+            } catch (e) {
+                console.error("セーブデータの読み込みに失敗しました。", e);
+            }
+        }
+        if (savedEquip) {
+            try {
+                let loadedEquip = JSON.parse(savedEquip);
+                currentEquip = normalizeEquip(loadedEquip);
+            } catch (e) {
+                console.error("装備データの読み込みに失敗しました。", e);
+            }
+        }
+
+        if (state.highestReportedScore === undefined) {
+            state.highestReportedScore = state.totalScore;
+        }
+        if (state.lastLoginTime === undefined) {
+            state.lastLoginTime = 0;
+        }
+        if (state.version === undefined) {
+            state.version = SAVE_VERSION;
+        }
+        
+        let isEquipOrderRestored = false;
+        if (savedEquipOrder) {
+            try {
+                let parsedOrder = JSON.parse(savedEquipOrder);
+                if (Array.isArray(parsedOrder)) {
+                    let isValid = true;
+                    parsedOrder.forEach(o => {
+                        if (typeof o !== 'object' || typeof o.type !== 'string' || typeof o.file !== 'string') {
+                            isValid = false;
+                        }
+                    });
+                    
+                    if (isValid) {
+                        let validOrder = parsedOrder.filter(o => {
+                            if (o.type === 'acc') {
+                                return currentEquip.acc.includes(o.file);
+                            } else {
+                                return currentEquip[o.type] === o.file;
+                            }
+                        });
+
+                        let expectedItems = [];
+                        if (currentEquip.setup) expectedItems.push({type: 'setup', file: currentEquip.setup});
+                        if (currentEquip.tops) expectedItems.push({type: 'tops', file: currentEquip.tops});
+                        if (currentEquip.bottoms) expectedItems.push({type: 'bottoms', file: currentEquip.bottoms});
+                        if (currentEquip.acc && currentEquip.acc.length > 0) {
+                            currentEquip.acc.forEach(a => expectedItems.push({type: 'acc', file: a}));
+                        }
+
+                        if (validOrder.length === expectedItems.length) {
+                            let allPresent = true;
+                            expectedItems.forEach(exp => {
+                                let found = validOrder.some(vo => vo.type === exp.type && vo.file === exp.file);
+                                if (!found) allPresent = false;
+                            });
+                            if (allPresent) {
+                                equipOrder = validOrder;
+                                isEquipOrderRestored = true;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("装備順データの読み込みに失敗しました。", e);
+            }
+        }
+
+        if (!isEquipOrderRestored) {
+            initEquipOrder();
+        }
+
+        applyAvatarImageAll();
+    }
+
+    function initUnlockedItems() {
+        if (typeof ITEM_DB === 'undefined') return;
+        ['setup', 'tops', 'bottoms', 'acc', 'bg'].forEach(cat => {
+            if (ITEM_DB[cat]) {
+                ITEM_DB[cat].forEach(item => {
+                    if (state.unlocked[item.id] === undefined) {
+                        state.unlocked[item.id] = false;
+                    }
+                });
+            }
+        });
+    }
+
+    async function exportData() {
+        try {
+            const data = { state: state, equip: currentEquip, equipOrder: equipOrder };
+            const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
+            const textarea = document.getElementById('backup-code');
+            textarea.value = encoded;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(encoded);
+                showCustomAlert("バックアップコードをクリップボードにコピーしたぞ！\n長くてすまない、メモ帳等に保存してくれ。");
+            } else {
+                textarea.select();
+                document.execCommand('copy');
+                showCustomAlert("バックアップコードをクリップボードにコピーしたぞ！\n長くてすまない、メモ帳等に保存してくれ。");
+            }
+        } catch (e) {
+            showCustomAlert("コードの出力に失敗しました。表示されたコードを手動でコピーしてください。");
+        }
+    }
+
+    function importData() {
+        const textarea = document.getElementById('backup-code');
+        const code = textarea.value.trim();
+        if (!code) {
+            showCustomAlert("バックアップコードを入力してください。");
+            return;
+        }
+        try {
+            const decoded = JSON.parse(decodeURIComponent(atob(code)));
+            if (isValidState(decoded.state) && decoded.equip && typeof decoded.equip === 'object') {
+                showCustomConfirm("現在のデータは上書きされます。本当によろしいですか？", () => {
+                    state = { ...defaultState, ...decoded.state };
+                    if (decoded.state.unlocked) {
+                        state.unlocked = { ...decoded.state.unlocked };
+                    } else {
+                        state.unlocked = {};
+                    }
+                    
+                    if (state.highestReportedScore === undefined) {
+                        state.highestReportedScore = state.totalScore;
+                    }
+                    if (state.lastLoginTime === undefined) {
+                        state.lastLoginTime = 0;
+                    }
+                    if (state.version === undefined) {
+                        state.version = SAVE_VERSION;
+                    }
+                    
+                    currentEquip = normalizeEquip(decoded.equip);
+                    
+                    if (decoded.equipOrder && Array.isArray(decoded.equipOrder)) {
+                         let isValid = true;
+                         decoded.equipOrder.forEach(o => {
+                             if (typeof o !== 'object' || typeof o.type !== 'string' || typeof o.file !== 'string') {
+                                 isValid = false;
+                             }
+                         });
+                         if (isValid) {
+                              let validOrder = decoded.equipOrder.filter(o => {
+                                  if (o.type === 'acc') {
+                                      return currentEquip.acc.includes(o.file);
+                                  } else {
+                                      return currentEquip[o.type] === o.file;
+                                  }
+                              });
+                              let expectedItems = [];
+                              if (currentEquip.setup) expectedItems.push({type: 'setup', file: currentEquip.setup});
+                              if (currentEquip.tops) expectedItems.push({type: 'tops', file: currentEquip.tops});
+                              if (currentEquip.bottoms) expectedItems.push({type: 'bottoms', file: currentEquip.bottoms});
+                              if (currentEquip.acc && currentEquip.acc.length > 0) {
+                                  currentEquip.acc.forEach(a => expectedItems.push({type: 'acc', file: a}));
+                              }
+                              if (validOrder.length === expectedItems.length) {
+                                  let allPresent = true;
+                                  expectedItems.forEach(exp => {
+                                      let found = validOrder.some(vo => vo.type === exp.type && vo.file === exp.file);
+                                      if (!found) allPresent = false;
+                                  });
+                                  if (allPresent) {
+                                      equipOrder = validOrder;
+                                  } else {
+                                      initEquipOrder();
+                                  }
+                              } else {
+                                  initEquipOrder();
+                              }
+                         } else {
+                             initEquipOrder();
+                         }
+                    } else {
+                         initEquipOrder();
+                    }
+
+                    initUnlockedItems();
+                    saveGame();
+                    showCustomAlert("データを読み込みました！", () => {
+                        location.reload();
+                    });
+                });
+            } else {
+                showCustomAlert("無効なバックアップデータです。");
+            }
+        } catch (e) {
+            showCustomAlert("コードの読み込みに失敗しました。正しいコードか確認してください。");
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('val-total').innerText = state.totalScore.toLocaleString();
+        document.getElementById('val-reports').innerText = state.reportCount;
+        document.getElementById('val-coins').innerText = state.coins;
+        
+        const dressupCoins = document.getElementById('val-coins-dressup');
+        if(dressupCoins) dressupCoins.innerText = state.coins;
+
+        updateLancelotImage();
+
+        const previewBtn = document.getElementById('btn-buy-preview');
+        if(previewBtn && previewTarget) {
+            let price = 500;
+            if (previewTarget.type === 'bg') price = 200;
+            if (previewTarget.type === 'acc') price = 150;
+            if (previewTarget.type === 'tops' || previewTarget.type === 'bottoms') price = 250;
+            previewBtn.disabled = false;
+        }
+    }
+
+    function setDefaultLancelotImg() {
+        currentLancelotImg = 'lancelot_1.png';
+    }
+
+    function updateLancelotImage() {
+        const img = document.getElementById('lancelot-img');
+        if (img) {
+            const imagePath = getItemImagePath(currentLancelotImg);
+            if (img.getAttribute('src') !== imagePath) {
+                img.src = imagePath;
+            }
+        }
+    }
+
+    function triggerAfkEvent() {
+        const afkActions = [
+            { img: 'lancelot_5.png', msg: '団長、どうしたんだ⋯？' },
+            { img: 'lancelot_7.png', msg: 'すぅ……団長、無理しないでくれ……' },
+            { img: 'lancelot_8.png', msg: 'むにゃ……もうプリンは食べられないぞ……' }
+        ];
+        const act = afkActions[Math.floor(Math.random() * afkActions.length)];
+        currentLancelotImg = act.img;
+        setLancelotMessage(act.msg);
+        updateLancelotImage();
+    }
+
+    function resetAfkTimer() {
+        if (!isGameStarted) return;
+        if (afkTimer) clearTimeout(afkTimer);
+        afkTimer = setTimeout(triggerAfkEvent, 5 * 60 * 1000); 
+    }
+
+    document.addEventListener('mousemove', resetAfkTimer);
+    document.addEventListener('touchstart', resetAfkTimer, {passive: true});
+    document.addEventListener('keydown', resetAfkTimer);
+    document.addEventListener('click', resetAfkTimer);
+
+    function pokeLancelot() {
+        if (!isGameStarted) return;
+        resetAfkTimer();
+
+        pokeCount++;
+        if (pokeTimer) clearTimeout(pokeTimer);
+        pokeTimer = setTimeout(() => {
+            pokeCount = 0;
+        }, 1500);
+
+        if (pokeCount >= 10 && !state.hasReceivedSecretPresent) {
+            state.hasReceivedSecretPresent = true;
+            state.coins += 2000;
+            currentLancelotImg = 'lancelot_4.png';
+            setLancelotMessage('仕方ないな、団長は…。俺からのプレゼントだ。みんなには内緒だぞ。');
+            updateLancelotImage();
+            updateUI();
+            saveGame();
+            showCustomAlert('ランスロットさんから\n2000コインのプレゼントです！');
+            return;
+        }
+
+        if (pokeCount >= 3) {
+            currentLancelotImg = 'lancelot_2.png';
+            setLancelotMessage('そんなに触って⋯どうしたんだ？団長には任務があるだろう。');
+            updateLancelotImage();
+            return;
+        }
+
+        const hour = new Date().getHours();
+        let pokes = [
+            { img: 'lancelot_1.png', msg: '報告に来てくれてありがとう、団長。会えて嬉しいよ。' },
+            { img: 'lancelot_5.png', msg: '古戦場とは一体なんだろうな。俺たちはなぜ戦って…これ以上考えるのはやめておこう。' },
+            { img: 'lancelot_8.png', msg: '適度な休息も必要だぞ⋯おやつタイムには俺も呼んでくれ！' },
+            { img: 'lancelot_9.png', msg: '古戦場の魔物たちはとても手強いと聞いている。怪我をしないよう気をつけてくれ。' },
+            { img: 'lancelot_10.png', msg: '俺は…少しでも団長の力になれているだろうか？' }
+        ];
+
+        if (hour >= 0 && hour < 7) {
+            pokes.push({ img: 'lancelot_8.png', msg: 'むにゃ⋯プリン⋯⋯⋯⋯' });
+        }
+
+        if (lastLoginAction) {
+            pokes.push(lastLoginAction);
+        }
+        
+        let currentScoreMsg = "";
+        let currentScoreImg = "lancelot_3.png";
+        if (state.totalScore >= 50000000000) {
+            currentScoreMsg = "信じられない記録だな。団長は本当に誇り高き戦士だ。白竜騎士団も見習わないとな。だが、倒れる前にしっかり休んでくれよ！";
+            currentScoreImg = "lancelot_6.png";
+        } else if (state.totalScore >= 30000000000) {
+            currentScoreMsg = "すさまじい戦果だ！団長の頑張りには頭が下がる思いだよ。英雄となった団長を見届けるため、引き続き応援しているぞ。";
+            currentScoreImg = "lancelot_6.png";
+        } else if (state.totalScore >= 20000000000) {
+            currentScoreMsg = "200億到達おめでとう！もしかして古戦場の英雄を目指しているのか？素晴らしい団長に付いて行けて光栄だ。";
+            currentScoreImg = "lancelot_6.png";
+        } else if (state.totalScore >= 15000000000) {
+            currentScoreMsg = "150億到達おめでとう！途方のない数字だな。俺も身が引き締まる思いだよ。団長は古戦場が好きなんだな。";
+            currentScoreImg = "lancelot_6.png";
+        } else if (state.totalScore >= 10000000000) {
+            currentScoreMsg = "100億到達おめでとう！俺が初めて騎空艇に乗った時だと考えられない数字だな。適度に休憩を取るんだぞ。";
+            currentScoreImg = "lancelot_6.png";
+        } else {
+            const maxScore = 8000000000;
+            const rank = Math.min(40, Math.floor((state.totalScore / maxScore) * 40));
+            if (typeof msgsProgress !== 'undefined' && msgsProgress[rank]) {
+                currentScoreMsg = msgsProgress[rank].msg;
+                currentScoreImg = msgsProgress[rank].img;
+            }
+        }
+        
+        if (currentScoreMsg) {
+            pokes.push({ img: currentScoreImg, msg: currentScoreMsg });
+        }
+
+        const act = pokes[Math.floor(Math.random() * pokes.length)];
+        currentLancelotImg = act.img;
+        setLancelotMessage(act.msg);
+        updateLancelotImage();
+    }
+
+    function switchMainTab(mode) {
+        currentMode = mode;
+        const gc = document.getElementById('game-container');
+        const uiArea = document.getElementById('ui-area');
+        const btns = document.querySelectorAll('#main-nav .tab-item');
+        
+        btns.forEach(btn => btn.classList.remove('active'));
+        gc.classList.remove('mode-top', 'mode-dressup', 'mode-data');
+        
+        if (mode === 'top') {
+            btns[0].classList.add('active');
+            gc.classList.add('mode-top');
+            uiArea.className = 'show-top';
+            document.getElementById('avatar-area').style.display = 'block';
+            document.getElementById('shop-preview-area').style.display = 'none';
+        } else if (mode === 'dressup') {
+            btns[1].classList.add('active');
+            gc.classList.add('mode-dressup');
+            switchSubTab(currentSubTab);
+        } else if (mode === 'data') {
+            btns[2].classList.add('active');
+            gc.classList.add('mode-data');
+            uiArea.className = 'show-data';
+        }
+        
+        if(window.innerWidth <= 768) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function switchSubTab(tab) {
+        currentSubTab = tab;
+        const uiArea = document.getElementById('ui-area');
+        const btns = document.querySelectorAll('#sub-nav .sub-tab-btn');
+        
+        btns.forEach(btn => btn.classList.remove('active'));
+        if (tab === 'room') {
+            btns[0].classList.add('active');
+            uiArea.className = 'show-room';
+            document.getElementById('avatar-area').style.display = 'block';
+            document.getElementById('shop-preview-area').style.display = 'none';
+        } else {
+            btns[1].classList.add('active');
+            uiArea.className = 'show-shop';
+            document.getElementById('avatar-area').style.display = 'none';
+            document.getElementById('shop-preview-area').style.display = 'flex';
+        }
+        
+        if(window.innerWidth <= 768) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function changeRoomCategory(cat) {
+        currentRoomCategory = cat;
+        document.querySelectorAll('#room-category-tabs .cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`cat-${cat}-room`).classList.add('active');
+        
+        const subTabs = document.getElementById('room-sub-tabs');
+        document.getElementById('room-acc-tabs').style.display = cat === 'acc' ? 'flex' : 'none';
+        if (cat === 'clothes') {
+            subTabs.style.display = 'flex';
+            renderRoomItems(currentRoomTab);
+        } else {
+            subTabs.style.display = 'none';
+            renderRoomItems(cat);
+        }
+    }
+
+    function changeRoomTab(tab) {
+        currentRoomTab = tab;
+        document.querySelectorAll('#room-sub-tabs .sub-cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${tab}-room`).classList.add('active');
+        renderRoomItems(tab);
+    }
+
+    function changeRoomAccTab(tab) {
+        currentRoomAccTab = tab;
+        document.querySelectorAll('#room-acc-tabs .sub-cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`acc-${tab}-room`).classList.add('active');
+        renderRoomItems('acc');
+    }
+
+    function changeShopCategory(cat) {
+        currentShopCategory = cat;
+        document.querySelectorAll('#shop-category-tabs .cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`cat-${cat}-shop`).classList.add('active');
+        
+        const subTabs = document.getElementById('shop-sub-tabs');
+        document.getElementById('shop-acc-tabs').style.display = cat === 'acc' ? 'flex' : 'none';
+        if (cat === 'clothes') {
+            subTabs.style.display = 'flex';
+            renderShopItems(currentShopTab);
+        } else {
+            subTabs.style.display = 'none';
+            renderShopItems(cat);
+        }
+    }
+
+    function changeShopTab(tab) {
+        currentShopTab = tab;
+        document.querySelectorAll('#shop-sub-tabs .sub-cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${tab}-shop`).classList.add('active');
+        renderShopItems(tab);
+    }
+
+    function changeShopAccTab(tab) {
+        currentShopAccTab = tab;
+        document.querySelectorAll('#shop-acc-tabs .sub-cat-tab-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`acc-${tab}-shop`).classList.add('active');
+        renderShopItems('acc');
+    }
+
+    function renderRoomItems(targetCategory) {
+        if (!targetCategory) {
+            targetCategory = currentRoomCategory === 'clothes' ? currentRoomTab : currentRoomCategory;
+        }
+        const unlockedContainer = document.getElementById('unlocked-list');
+        unlockedContainer.innerHTML = '';
+        const category = targetCategory;
+        
+        const catUnlocked = document.createElement('div');
+        catUnlocked.className = 'shop-category';
+
+        if (category === 'acc') {
+            const notice = document.createElement('p');
+            notice.style.fontSize = '12px';
+            notice.style.color = '#e74c3c';
+            notice.style.fontWeight = 'bold';
+            notice.style.margin = '0 0 10px 0';
+            notice.innerText = '※アクセサリーは複数つけることができるぞ。タップでつけ外しが可能だ。';
+            catUnlocked.appendChild(notice);
+        }
+        
+        const grid = document.createElement('div');
+        grid.className = 'item-grid';
+
+        const defBtn = document.createElement('div');
+        const isDefEquipped = category === 'acc' 
+            ? currentEquip.acc.length === 0 
+            : currentEquip[category] === defaultEquip[category];
+
+        defBtn.className = isDefEquipped ? 'item-card active-equip' : 'item-card';
+        defBtn.onclick = () => {
+            if (category === 'acc') toggleEquip('acc', '');
+            else toggleEquip(category, defaultEquip[category]);
+        };
+        
+        const defImg = document.createElement('div');
+        defImg.className = 'no-image';
+        defImg.innerText = 'OFF';
+        
+        const defText = document.createElement('span');
+        defText.innerText = category === 'acc' ? 'アクセサリーを全て外す' : 'デフォルト';
+        
+        defBtn.appendChild(defImg);
+        defBtn.appendChild(defText);
+        grid.appendChild(defBtn);
+
+        if (typeof ITEM_DB !== 'undefined' && ITEM_DB[category]) {
+            ITEM_DB[category].forEach(item => {
+                if (category === 'acc' && (item.accGroup || 'other') !== currentRoomAccTab) return;
+                if (state.unlocked[item.id]) {
+                    const isEquipped = category === 'acc' 
+                        ? currentEquip.acc.includes(item.file)
+                        : currentEquip[category] === item.file;
+                    
+                    const card = document.createElement('div');
+                    card.className = isEquipped ? 'item-card active-equip' : 'item-card';
+                    card.onclick = () => toggleEquip(item.type, item.file);
+                    
+                    const img = document.createElement('img');
+                    img.src = getItemImagePath(item.file);
+                    img.onerror = function() {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'no-image';
+                        fallback.innerText = 'NoImg';
+                        if (this.parentNode) {
+                            this.parentNode.replaceChild(fallback, this);
+                        }
+                    };
+                    
+                    const text = document.createElement('span');
+                    text.innerText = item.name;
+
+                    card.appendChild(img);
+                    card.appendChild(text);
+                    grid.appendChild(card);
+                }
+            });
+        }
+        
+        catUnlocked.appendChild(grid);
+        unlockedContainer.appendChild(catUnlocked);
+    }
+
+    function renderShopItems(targetCategory) {
+        if (!targetCategory) {
+            targetCategory = currentShopCategory === 'clothes' ? currentShopTab : currentShopCategory;
+        }
+        const lockedContainer = document.getElementById('locked-list');
+        lockedContainer.innerHTML = '';
+        const category = targetCategory;
+        
+        const catLocked = document.createElement('div');
+        catLocked.className = 'shop-category';
+        
+        const grid = document.createElement('div');
+        grid.className = 'item-grid';
+        let hasLocked = false;
+
+        if (typeof ITEM_DB !== 'undefined' && ITEM_DB[category]) {
+            ITEM_DB[category].forEach(item => {
+                if (category === 'acc' && (item.accGroup || 'other') !== currentShopAccTab) return;
+                if (!state.unlocked[item.id] && !item.meatRewardOnly) {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.onclick = () => showPreview(item);
+
+                    const img = document.createElement('img');
+                    img.src = getItemImagePath(item.file);
+                    img.onerror = function() {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'no-image';
+                        fallback.innerText = 'NoImg';
+                        if (this.parentNode) {
+                            this.parentNode.replaceChild(fallback, this);
+                        }
+                    };
+
+                    const text = document.createElement('span');
+                    text.innerText = item.name;
+
+                    card.appendChild(img);
+                    card.appendChild(text);
+
+                    grid.appendChild(card);
+                    hasLocked = true;
+                }
+            });
+        }
+        
+        if (hasLocked) {
+            catLocked.appendChild(grid);
+            lockedContainer.appendChild(catLocked);
+        }
+    }
+
+    function renderItems() {
+        renderRoomItems();
+        renderShopItems();
+    }
+
+    function applyAvatarImageAll() {
+        const avatarArea = document.getElementById('avatar-area');
+        
+        avatarArea.querySelectorAll('.dynamic-layer').forEach(el => el.remove());
+        
+        const bgLayer = document.getElementById('layer-bg');
+        if (currentEquip.bg === '') {
+            bgLayer.style.display = 'none';
+        } else {
+            bgLayer.src = getItemImagePath(currentEquip.bg);
+            bgLayer.style.display = 'block';
+        }
+        
+        let z = 3;
+        equipOrder.forEach(item => {
+            const img = document.createElement('img');
+            img.className = 'avatar-layer dynamic-layer';
+            img.style.zIndex = z++;
+            img.src = getItemImagePath(item.file);
+            avatarArea.appendChild(img);
+        });
+    }
+
+    function toggleEquip(type, file) {
+        let isRemoving = false;
+
+        if (type === 'setup') {
+            if (currentEquip.setup === file && file !== '') isRemoving = true;
+
+            if (!isRemoving && file !== '') {
+                equipOrder = equipOrder.filter(e => e.type !== 'tops' && e.type !== 'bottoms' && e.type !== 'setup');
+                equipOrder.push({type: 'setup', file: file});
+            } else if (isRemoving || file === '') {
+                equipOrder = equipOrder.filter(e => e.type !== 'setup');
+            }
+            
+            currentEquip.setup = isRemoving ? '' : file;
+            if (currentEquip.setup !== '') {
+                currentEquip.tops = '';
+                currentEquip.bottoms = '';
+            }
+        } else if (type === 'tops' || type === 'bottoms') {
+            if (currentEquip[type] === file && file !== '') isRemoving = true;
+
+            if (!isRemoving && file !== '') {
+                equipOrder = equipOrder.filter(e => e.type !== type && e.type !== 'setup');
+                equipOrder.push({type: type, file: file});
+            } else if (isRemoving || file === '') {
+                equipOrder = equipOrder.filter(e => e.type !== type);
+            }
+
+            currentEquip[type] = isRemoving ? '' : file;
+            if (currentEquip.tops !== '' || currentEquip.bottoms !== '') {
+                currentEquip.setup = '';
+            }
+        } else if (type === 'acc') {
+            if (file === '') {
+                currentEquip.acc = [];
+                equipOrder = equipOrder.filter(e => e.type !== 'acc');
+            } else {
+                const idx = currentEquip.acc.indexOf(file);
+                if (idx > -1) {
+                    currentEquip.acc.splice(idx, 1);
+                    const orderIdx = equipOrder.findIndex(e => e.type === 'acc' && e.file === file);
+                    if (orderIdx > -1) equipOrder.splice(orderIdx, 1);
+                } else {
+                    currentEquip.acc.push(file);
+                    equipOrder.push({type: 'acc', file: file});
+                }
+            }
+        } else {
+            currentEquip[type] = (currentEquip[type] === file && file !== '') ? '' : file;
+        }
+        
+        applyAvatarImageAll();
+        renderRoomItems();
+        saveGame(); 
+    }
+
+    function randomEquip() {
+        let newEquip = { setup: '', tops: '', bottoms: '', acc: [], bg: '' };
+        let newOrder = [];
+
+        const getUnlockedFiles = (cat) => {
+            if(typeof ITEM_DB === 'undefined' || !ITEM_DB[cat]) return [];
+            return ITEM_DB[cat].filter(item => state.unlocked[item.id]).map(item => item.file);
+        };
+
+        const bgs = getUnlockedFiles('bg');
+        if (bgs.length > 0) {
+            const choices = ['', ...bgs];
+            newEquip.bg = choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        const setups = getUnlockedFiles('setup');
+        const tops = getUnlockedFiles('tops');
+        const bottoms = getUnlockedFiles('bottoms');
+
+        let clothesPattern = [];
+        if (setups.length > 0) clothesPattern.push('setup');
+        if (tops.length > 0 || bottoms.length > 0) clothesPattern.push('separate');
+
+        if (clothesPattern.length > 0) {
+            const pattern = clothesPattern[Math.floor(Math.random() * clothesPattern.length)];
+            if (pattern === 'setup') {
+                const choices = ['', ...setups];
+                const chosen = choices[Math.floor(Math.random() * choices.length)];
+                newEquip.setup = chosen;
+                if (chosen) newOrder.push({type: 'setup', file: chosen});
+            } else {
+                if (tops.length > 0) {
+                    const choices = ['', ...tops];
+                    const chosen = choices[Math.floor(Math.random() * choices.length)];
+                    newEquip.tops = chosen;
+                    if (chosen) newOrder.push({type: 'tops', file: chosen});
+                }
+                if (bottoms.length > 0) {
+                    const choices = ['', ...bottoms];
+                    const chosen = choices[Math.floor(Math.random() * choices.length)];
+                    newEquip.bottoms = chosen;
+                    if (chosen) newOrder.push({type: 'bottoms', file: chosen});
+                }
+            }
+        }
+
+        const accs = getUnlockedFiles('acc');
+        let selectedAccCount = 0;
+        
+        if (accs.length > 0) {
+            let maxAccCount = Math.min(8, accs.length);
+            let candidates = [];
+            
+            if (maxAccCount < 2) {
+                 selectedAccCount = accs.length;
+            } else {
+                 const probs = { 2: 30, 3: 25, 4: 18, 5: 12, 6: 8, 7: 5, 8: 2 };
+                 let totalProb = 0;
+                 for (let i = 2; i <= maxAccCount; i++) {
+                     candidates.push({ count: i, prob: probs[i] });
+                     totalProb += probs[i];
+                 }
+                 let r = Math.random() * totalProb;
+                 for (let i = 0; i < candidates.length; i++) {
+                     if (r < candidates[i].prob) {
+                         selectedAccCount = candidates[i].count;
+                         break;
+                     }
+                     r -= candidates[i].prob;
+                 }
+            }
+            
+            let shuffledAccs = [...accs];
+            for (let i = shuffledAccs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledAccs[i], shuffledAccs[j]] = [shuffledAccs[j], shuffledAccs[i]];
+            }
+            
+            let chosenAccs = shuffledAccs.slice(0, selectedAccCount);
+            chosenAccs.forEach(accFile => {
+                newEquip.acc.push(accFile);
+                newOrder.push({type: 'acc', file: accFile});
+            });
+        }
+
+        currentEquip = newEquip;
+        equipOrder = newOrder;
+
+        applyAvatarImageAll();
+        renderRoomItems();
+        saveGame();
+    }
+
+    function showPreview(item) {
+        previewTarget = item;
+        const img = document.getElementById('preview-img');
+        const layerBg = document.getElementById('preview-layer-bg');
+        
+        img.style.display = 'none';
+        layerBg.style.display = 'none';
+        
+        if (item.type === 'bg') {
+            layerBg.src = getItemImagePath(item.file);
+            layerBg.style.display = 'block';
+        } else {
+            img.src = getItemImagePath(item.file);
+            img.style.display = 'block';
+        }
+        
+        let price = 500;
+        if (item.type === 'bg') price = 200;
+        if (item.type === 'acc') price = 150;
+        if (item.type === 'tops' || item.type === 'bottoms') price = 250;
+        if (FREE_GIFT_IDS.includes(item.id)) price = 0;
+        
+        const buyBtn = document.getElementById('btn-buy-preview');
+        buyBtn.innerText = FREE_GIFT_IDS.includes(item.id) ? '俺からのプレゼントだ！' : `${price}コインで解放`;
+        buyBtn.disabled = false;
+    }
+
+    function buyPreviewItem() {
+        if (!previewTarget) return;
+        
+        let price = 500;
+        if(previewTarget.type === 'bg') price = 200;
+        if(previewTarget.type === 'acc') price = 150;
+        if(previewTarget.type === 'tops' || previewTarget.type === 'bottoms') price = 250;
+        if (FREE_GIFT_IDS.includes(previewTarget.id)) price = 0;
+        
+        if (state.coins < price) {
+            showCustomAlert("コインが不足しているぞ！");
+            return;
+        }
+                
+        state.coins -= price;
+        state.unlocked[previewTarget.id] = true;
+        
+        const specialWeaponIds = ['acc23','acc74','acc112', 'acc140', 'acc191' , 'acc192', 'acc196' , 'acc201','acc204','acc205','acc206','acc216','acc222','acc224','acc233', ];
+        
+        if (FREE_GIFT_IDS.includes(previewTarget.id)) {
+            setDefaultLancelotImg();
+            setLancelotMessage(`「${previewTarget.name}」は俺からのプレゼントだ。クローゼットに入れておいたぞ。`);
+        } else if (specialWeaponIds.includes(previewTarget.id)) {
+            currentLancelotImg = 'lancelot_6.png';
+            setLancelotMessage(`これは……！団長、${previewTarget.name}を手に入れたのか！羨ましいな。俺は武器を集めるのが好きなんだ！`);
+        } else {
+            setDefaultLancelotImg();
+            setLancelotMessage(`新しいアイテム「${previewTarget.name}」を手に入れたな。クローゼットに入れておいたぞ。`);
+        }         
+        const btn = document.getElementById('btn-buy-preview');
+        const rect = btn.getBoundingClientRect();
+        const effectEl = document.createElement('div');
+        effectEl.innerText = "✨ 解放！ ✨";
+        effectEl.style.position = 'fixed';
+        effectEl.style.left = (rect.left + rect.width / 2) + 'px';
+        effectEl.style.top = rect.top + 'px';
+        effectEl.style.transform = 'translate(-50%, -50%)';
+        effectEl.style.color = '#f1c40f';
+        effectEl.style.fontWeight = 'bold';
+        effectEl.style.fontSize = '20px';
+        effectEl.style.textShadow = '0 2px 4px rgba(0,0,0,0.3)';
+        effectEl.style.pointerEvents = 'none';
+        effectEl.style.zIndex = '9999';
+        effectEl.style.animation = 'purchaseEffect 1s ease-out forwards';
+        document.body.appendChild(effectEl);
+        
+        setTimeout(() => {
+            if (effectEl.parentNode) effectEl.parentNode.removeChild(effectEl);
+        }, 1000);
+
+        previewTarget = null;
+        document.getElementById('preview-img').style.display = 'none';
+        document.getElementById('preview-layer-bg').style.display = 'none';
+        
+        const buyBtnPreview = document.getElementById('btn-buy-preview');
+        buyBtnPreview.innerText = '衣装を選んでくれ！';
+        buyBtnPreview.disabled = true;
+        
+        updateUI();
+        renderItems();
+        saveGame(); 
+    }
+
+    function reportScore() {
+        fixScoreCount = 0;
+
+        const inputValStr = document.getElementById('input-score').value.trim();
+
+        if (inputValStr === '' || !/^\d+$/.test(inputValStr)) {
+            currentLancelotImg = 'lancelot_2.png';
+            setLancelotMessage("そんな貢献度はあり得ないと思うが…報告を間違えたのか？");
+            updateUI();
+            return;
+        }
+
+        const inputVal = Number(inputValStr);
+        
+        if (
+            !Number.isSafeInteger(inputVal) ||
+            inputVal < 0 ||
+            inputVal >= 250000000000
+        ) {
+            currentLancelotImg = 'lancelot_2.png';
+            setLancelotMessage("そんな貢献度はあり得ないと思うが…報告を間違えたのか？");
+            updateUI();
+            return;
+        }
+
+        if (inputVal <= state.totalScore) {
+            currentLancelotImg = 'lancelot_5.png';
+            setLancelotMessage("前回より貢献度が増えていないようだが…報告ミスではないか？");
+            updateUI();
+            return;
+        }
+
+        const now = Date.now();
+        if (now - state.lastReportTime < COOLDOWN_MS && state.lastReportTime !== 0) {
+            const remainMin = Math.ceil((COOLDOWN_MS - (now - state.lastReportTime)) / 1000 / 60);
+            setDefaultLancelotImg();
+            setLancelotMessage(`少し休憩したらどうだ？ 次の報告まであと ${remainMin} 分だ。`);
+            updateUI();
+            return;
+        }
+
+        const diff = inputVal - state.totalScore;
+        
+        let isOverwork = false;
+        if (state.lastReportTime !== 0) {
+            const timeDiffMs = now - state.lastReportTime;
+            const timeDiffMins = timeDiffMs / (1000 * 60);
+            
+            if (timeDiffMins > 0) {
+                const pacePer30Min = (diff / timeDiffMins) * 30;
+                
+                if (diff <= 10000) {
+                    currentLancelotImg = 'lancelot_2.png';
+                    setLancelotMessage("うーん、もう少し頑張らないか？");
+                    updateUI();
+                    return;
+                }
+                
+                if (pacePer30Min >= 500000000) { 
+                    isOverwork = true;
+                }
+            }
+        }
+
+        state.totalScore = inputVal;
+        state.lastReportTime = now;
+
+        if (inputVal > state.highestReportedScore) {
+            state.highestReportedScore = inputVal;
+        }
+        state.reportCount++;
+        
+        const earnedCoins = 800;
+        const earnedAffection = 10;
+
+        state.coins += earnedCoins;
+        state.affection += earnedAffection;
+
+        if (earnedCoins === 800) {
+            const btn = document.getElementById('btn-report');
+            if (btn) {
+                const rect = btn.getBoundingClientRect();
+                const effectEl = document.createElement('div');
+                effectEl.innerText = "+800 🪙";
+                effectEl.style.position = 'fixed';
+                effectEl.style.left = (rect.left + rect.width / 2) + 'px';
+                effectEl.style.top = rect.top + 'px';
+                effectEl.style.transform = 'translate(-50%, -50%)';
+                effectEl.style.color = '#f1c40f';
+                effectEl.style.fontWeight = 'bold';
+                effectEl.style.fontSize = '24px';
+                effectEl.style.textShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                effectEl.style.pointerEvents = 'none';
+                effectEl.style.zIndex = '9999';
+                effectEl.style.animation = 'purchaseEffect 1s ease-out forwards';
+                document.body.appendChild(effectEl);
+                
+                setTimeout(() => {
+                    if (effectEl.parentNode) effectEl.parentNode.removeChild(effectEl);
+                }, 1000);
+            }
+        }
+
+        setDefaultLancelotImg();
+        let msgToSet = "";
+
+        if (isOverwork) {
+            currentLancelotImg = 'lancelot_4.png';
+            msgToSet = "……本当か？いくら団長でもそのペースは信じがたい。無理をして倒れないよう、適度な休息を取ってくれ。";
+        } else if (state.totalScore >= 50000000000) {
+            msgToSet = "信じられない記録だな。団長は本当に誇り高き戦士だ。白竜騎士団も見習わないとな。だが、倒れる前にしっかり休んでくれよ！";
+            currentLancelotImg = 'lancelot_6.png';
+        } else if (state.totalScore >= 30000000000) {
+            msgToSet = "すさまじい戦果だ！団長の頑張りには頭が下がる思いだよ。英雄となった団長を見届けるため、引き続き応援しているぞ。";
+            currentLancelotImg = 'lancelot_6.png';
+        } else if (state.totalScore >= 20000000000) {
+            msgToSet = "200億到達おめでとう！もしかして古戦場の英雄を目指しているのか？素晴らしい団長について行けて光栄だ。";
+            currentLancelotImg = 'lancelot_6.png';
+        } else if (state.totalScore >= 15000000000) {
+            msgToSet = "150億到達おめでとう！途方のない数字だな。俺も身が引き締まる思いだよ。団長は古戦場が好きなんだな。";
+            currentLancelotImg = 'lancelot_6.png';
+        } else if (state.totalScore >= 10000000000) {
+            msgToSet = "100億到達おめでとう！俺が初めて騎空艇に乗った時だと考えられない数字だな。適度に休憩を取るんだぞ。";
+            currentLancelotImg = 'lancelot_6.png';
+        } else {
+            const maxScore = 8000000000;
+            const rank = Math.min(40, Math.floor((state.totalScore / maxScore) * 40));
+            if (typeof msgsProgress !== 'undefined' && msgsProgress[rank]) {
+                msgToSet = msgsProgress[rank].msg;
+                currentLancelotImg = msgsProgress[rank].img;
+            }
+        }
+
+        const hour = new Date().getHours();
+        if (hour >= 0 && hour < 7) {
+            currentLancelotImg = 'lancelot_4.png';
+            msgToSet = "こんな時間に報告か！？団長はすごいな。無理をせず休むことも忘れないでくれよ！";
+        }
+
+        setLancelotMessage(msgToSet);
+
+        document.getElementById('input-score').value = '';
+        updateUI();
+        startCooldownTimer();
+        saveGame();
+    }
+
+    function fixScore() {
+        const inputValStr = document.getElementById('input-score').value.trim();
+
+        if (inputValStr === '' || !/^\d+$/.test(inputValStr)) {
+            currentLancelotImg = 'lancelot_2.png';
+            setLancelotMessage("そんな貢献度はあり得ないと思うが…報告を間違えたのか？");
+            updateUI();
+            return;
+        }
+
+        const inputVal = Number(inputValStr);
+        
+        if (
+            !Number.isSafeInteger(inputVal) ||
+            inputVal < 0 ||
+            inputVal >= 100000000000
+        ) {
+            currentLancelotImg = 'lancelot_2.png';
+            setLancelotMessage("そんな貢献度はあり得ないと思うが…報告を間違えたのか？");
+            updateUI();
+            return;
+        }
+
+        fixScoreCount++;
+        if (fixScoreCount >= 2) {
+            currentLancelotImg = 'lancelot_2.png';
+        } else {
+            setDefaultLancelotImg();
+        }
+
+        state.totalScore = inputVal;
+        setLancelotMessage("貢献度を修正したぞ。次は間違えないようにな。");
+
+        document.getElementById('input-score').value = '';
+        updateUI();
+        saveGame();
+    }
+
+    function setLancelotMessage(msg) {
+        const box = document.getElementById('message-box');
+        box.innerText = '';
+        
+        if (typeWriterTimeout) clearTimeout(typeWriterTimeout);
+        
+        let i = 0;
+        function type() {
+            if (i < msg.length) {
+                box.innerText += msg.charAt(i);
+                i++;
+                typeWriterTimeout = setTimeout(type, 40);
+            }
+        }
+        type();
+    }
+
+    function updateCooldownUI() {
+        document.getElementById('input-score').disabled = true;
+        document.getElementById('btn-report').disabled = true;
+        document.getElementById('btn-fix').disabled = true;
+        document.getElementById('cooldown-text').innerText = "古戦場開始後に貢献度を報告できるようになります。";
+    }
+
+    function startCooldownTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        
+        updateCooldownUI();
+        
+        if (state.lastReportTime !== 0 && (COOLDOWN_MS - (Date.now() - state.lastReportTime)) > 0) {
+            timerInterval = setInterval(updateCooldownUI, 1000);
+        }
+    }
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        
+        const now = Date.now();
+        const hour = new Date(now).getHours();
+
+        let loginImg = 'lancelot_1.png';
+        let loginMsg = "団長、お疲れさま。古戦場へ行くんだな。\n報告を待っているぞ。";
+
+        if (hour >= 2 && hour < 5) {
+            loginImg = 'lancelot_2.png';
+            loginMsg = '団長、深夜に何をしているんだ…？休息も任務のうちだぞ。ここは俺が守る、休むんだ。';
+        } else if ((hour >= 0 && hour < 2) || (hour >= 5 && hour < 7)) {
+            loginImg = 'lancelot_7.png';
+            loginMsg = '…？団長か。すまない、少しうとうとしてしまってな…。';
+        } else if (state.lastLoginTime && (now - state.lastLoginTime >= 24 * 60 * 60 * 1000)) {
+            loginImg = 'lancelot_5.png';
+            loginMsg = '団長、忙しかったのか？たまには俺のことを思い出してくれると嬉しいな。';
+        } else if (state.coins >= 5000 && Math.random() < 0.3) {
+            loginImg = 'lancelot_5.png';
+            loginMsg = '団長、ショップへ行かないのか？素敵なものがたくさんあるようだぞ…？';
+        }
+
+        lastLoginAction = { img: loginImg, msg: loginMsg };
+
+        state.lastLoginTime = now;
+        saveGame();
+
+        currentLancelotImg = loginImg;
+        setLancelotMessage(loginMsg);
+        updateUI();
+        
+        isGameStarted = true;
+        resetAfkTimer();
+    }
+    
+    function backToStart() {
+        document.getElementById('start-screen').style.display = 'flex';
+        isGameStarted = false;
+        if (afkTimer) {
+            clearTimeout(afkTimer);
+            afkTimer = null;
+        }
+        if (pokeTimer) {
+            clearTimeout(pokeTimer);
+            pokeTimer = null;
+        }
+        pokeCount = 0;
+    }
+
+    function shareOnX() {
+        const scoreStr = state.totalScore.toLocaleString();
+        const text = `古戦場お疲れ様。今の団長の貢献度は${scoreStr}だぞ。少し俺と休憩していかないか？ #ランぬのわくわく古戦場 https://lanchangame.github.io/wakuwakukosenjo/`;
+        const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function saveAvatarImage() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 800;
+        const ctx = canvas.getContext('2d');
+
+        const sources = [];
+        if (currentEquip.bg !== '') {
+            sources.push({ src: currentEquip.bg });
+        }
+        sources.push({ src: 'avatar.png' });
+        equipOrder.forEach(item => {
+            sources.push({ src: item.file });
+        });
+
+        let loadedCount = 0;
+        const images = [];
+
+        sources.forEach((item, index) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                images[index] = img;
+                loadedCount++;
+                if (loadedCount === sources.length) {
+                    processCanvasExport(canvas, ctx, images);
+                }
+            };
+            img.onerror = () => {
+                loadedCount++;
+                if (loadedCount === sources.length) {
+                    processCanvasExport(canvas, ctx, images);
+                }
+            };
+            img.src = getItemImagePath(item.src);
+        });
+    }
+
+    function processCanvasExport(canvas, ctx, images) {
+        images.forEach(imgObj => {
+            if (imgObj) {
+                ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+            }
+        });
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                fallbackDownload(canvas);
+                return;
+            }
+            const file = new File([blob], 'lannu_avatar.png', { type: 'image/png' });
+
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'ランぬの着せ替え画像',
+                        text: 'ランぬの着せ替えアバターです！'
+                    });
+                    showCustomAlert("団長の端末に保存しておいたぞ！");
+                    return;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                       fallbackDownload(canvas, blob);
+                    }
+                    return;
+                }
+            }
+
+            fallbackDownload(canvas, blob);
+        }, 'image/png');
+    }
+
+        function fallbackDownload(canvas, blob = null) {
+    try {
+        const link = document.createElement('a');
+        link.download = 'lannu_avatar.png';
+
+        let url;
+
+        if (blob) {
+            url = URL.createObjectURL(blob);
+        } else {
+            url = canvas.toDataURL('image/png');
+        }
+
+        link.href = url;
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if (blob) {
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        showCustomAlert("団長の端末に保存しておいたぞ！");
+    } catch (e) {
+        console.error("画像保存エラー:", e);
+        showCustomAlert("画像の保存に失敗したようだ…");
+    }
+}
+
+    function preloadImages() {
+        const imagesToPreload = [];
+        for (let i = 1; i <= 10; i++) {
+            imagesToPreload.push(`lancelot_${i}.png`);
+        }
+        if (typeof ITEM_DB !== 'undefined') {
+            ['setup', 'tops', 'bottoms', 'acc', 'bg'].forEach(cat => {
+                if (ITEM_DB[cat]) {
+                    ITEM_DB[cat].forEach(item => {
+                        if (item.file) imagesToPreload.push(item.file);
+                    });
+                }
+            });
+        }
+        imagesToPreload.forEach(src => {
+            const img = new Image();
+            img.src = getItemImagePath(src);
+            if (img.decode) {
+                img.decode().catch(() => {});
+            }
+        });
+    }
+
+    loadGame();
+    initUnlockedItems();
+
+    preloadImages();
+
+    updateUI();
+    renderItems();
+    startCooldownTimer();
+    initMeatMode();
+
+    if (typeof infoContentHTML !== 'undefined') {
+        document.getElementById('info-content').innerHTML = infoContentHTML;
+    }
+</script>
+</body>
+</html>
