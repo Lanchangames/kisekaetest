@@ -796,7 +796,7 @@
 
             <div id="section-top">
                 <div id="lancelot-area">
-                    <img id="lancelot-img" src="image/lancelot/lancelot_1.png" alt="ランスロット" onclick="pokeLancelot()" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNDAiIHk9IjQ1IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
+                    <img id="lancelot-img" src="images/lancelot/lancelot_1.png" alt="ランスロット" onclick="pokeLancelot()" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNDAiIHk9IjQ1IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
                     <div id="message-box"></div>
                 </div>
 
@@ -981,7 +981,7 @@
     // 保存する画像名は変更せず、読み込み時だけ整理後の場所へ変換する。
     function getItemImagePath(file) {
         if (typeof file !== 'string') return file;
-        if (/^lancelot(?:_[^/\\]+)?\.png$/.test(file)) return `image/lancelot/${file}`;
+        if (/^lancelot(?:_[^/\\]+)?\.png$/.test(file)) return `images/lancelot/${file}`;
         const match = file.match(/^(acc|bg|tops|bottoms|clothes|meat)_[^/\\]+\.png$/);
         return match ? `images/${match[1]}/${file}` : file;
     }
