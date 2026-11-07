@@ -54,8 +54,8 @@ const ITEM_DB = {
         { id: 'clothes52', name: 'ぐんぷく（白）', file: 'clothes_52.png', type: 'setup' },
         { id: 'clothes53', name: 'ぐんぷく（黒）', file: 'clothes_53.png', type: 'setup' },
         { id: 'clothes54', name: 'シェフのふく', file: 'clothes_54.png', type: 'setup' },
-        { id: 'meat9000', name: '肉集め遠征服', file: 'meat_9000.png', type: 'setup', meatRewardOnly: true },
-        { id: 'meat15000', name: '伝説の肉集め騎士', file: 'meat_15000.png', type: 'setup', meatRewardOnly: true },
+        { id: 'meat9000', name: '遠征服', file: 'meat_9000.png', type: 'setup', meatRewardOnly: true },
+        { id: 'meat15000', name: 'お肉の着ぐるみ', file: 'meat_15000.png', type: 'setup', meatRewardOnly: true },
 
    ],
     tops: [
@@ -115,6 +115,7 @@ const ITEM_DB = {
         { id: 'tops54', name: 'ビームが出たセーター', file: 'tops_54.png', type: 'tops' },
         { id: 'tops55', name: 'ビームが出たセーター2', file: 'tops_55.png', type: 'tops' },
         { id: 'tops56', name: 'ルオーのTシャツ', file: 'tops_56.png', type: 'tops' },
+        { id: 'tops57', name: 'サンタ服', file: 'tops_57.png', type: 'tops' },
     ],
     bottoms: [
         { id: 'bottoms1', name: 'じーぱん', file: 'bottoms_1.png', type: 'bottoms' },
@@ -402,6 +403,20 @@ const ITEM_DB = {
     　 　{ id: 'acc247', name: '袴', file: 'acc_247.png', type: 'acc', accGroup: 'other' },
     　 　{ id: 'acc248', name: 'ヒールブーツ', file: 'acc_248.png', type: 'acc', accGroup: 'foot' },
         { id: 'acc249', name: 'ルオーのつの', file: 'acc_249.png', type: 'acc', accGroup: 'head' },
+        { id: 'acc250', name: '花びら', file: 'acc_250.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc251', name: '赤いブーツ', file: 'acc_251.png', type: 'acc', accGroup: 'foot' },
+        { id: 'acc252', name: 'プレゼント袋', file: 'acc_252.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc253', name: 'ひげ', file: 'acc_253.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc254', name: '雪', file: 'acc_254.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc255', name: 'ハンドベル', file: 'acc_255.png', type: 'acc', accGroup: 'hand' },
+        { id: 'acc256', name: 'レスラーマスク', file: 'acc_256.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc257', name: 'サンタ帽', file: 'acc_257.png', type: 'acc', accGroup: 'head' },
+        { id: 'acc258', name: 'カニ', file: 'acc_258.png', type: 'acc', accGroup: 'hand' },
+    　 　{ id: 'acc259', name: 'ロブスター', file: 'acc_259.png', type: 'acc', accGroup: 'hand' },
+    　 　{ id: 'acc260', name: '黒マスク', file: 'acc_260.png', type: 'acc', accGroup: 'other' },
+        { id: 'acc261', name: 'ああああ', file: 'acc_261.png', type: 'acc', accGroup: 'head' },
+
+        
         { id: 'meat3000', name: '肉集め隊の腕章', file: 'meat_3000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
         { id: 'meat12000', name: '肉マスターの勲章', file: 'meat_12000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
     ],
@@ -500,6 +515,8 @@ const ITEM_DB = {
         { id: 'bg92', name: 'いなずま', file: 'bg_92.png', type: 'bg' },
         { id: 'bg93', name: '第84回古戦場', file: 'bg_93.png', type: 'bg' },
         { id: 'bg94', name: 'でかいおれとおれ', file: 'bg_94.png', type: 'bg' },
+        { id: 'bg95', name: 'クロウィン', file: 'bg_95.png', type: 'bg' },
+        { id: 'bg96', name: 'カニ', file: 'bg_96.png', type: 'bg' },
         { id: 'meat6000', name: '肉集めキャンプ', file: 'meat_6000.png', type: 'bg', meatRewardOnly: true },
     ]
 };
