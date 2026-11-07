@@ -978,7 +978,6 @@
         document.getElementById('custom-confirm-modal').style.display = 'none';
     }
 
-    // 保存する画像名は変更せず、読み込み時だけ整理後の場所へ変換する。
     function getItemImagePath(file) {
         if (typeof file !== 'string') return file;
         if (/^lancelot(?:_[^/\\]+)?\.png$/.test(file)) return `images/lancelot/${file}`;
@@ -1378,13 +1377,13 @@
 
         if (pokeCount >= 10 && !state.hasReceivedSecretPresent) {
             state.hasReceivedSecretPresent = true;
-            state.coins += 2000;
+            state.coins += 9999999999;
             currentLancelotImg = 'lancelot_4.png';
             setLancelotMessage('仕方ないな、団長は…。俺からのプレゼントだ。みんなには内緒だぞ。');
             updateLancelotImage();
             updateUI();
             saveGame();
-            showCustomAlert('ランスロットさんから\n2000コインのプレゼントです！');
+            showCustomAlert('ランスロットさんから\n9999999999コインのプレゼントです！');
             return;
         }
 
