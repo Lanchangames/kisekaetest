@@ -4,38 +4,35 @@
     const MEAT_COOLDOWN_MS = 15 * 60 * 1000;
     let meatTimerInterval = null;
 
-    // 肉スタンプラリー限定着せ替え報酬。
-    // items.js 側には同じ id / name / file / type で meatRewardOnly: true を付けて追加する。
-    // 定義がまだ存在しない場合は報酬取得済みにせず、後から items.js に追加した時点で自動解放する。
     const MEAT_STAMP_REWARDS = [
         { amount: 3000,  itemId: 'meat3000',  name: '肉集め隊の腕章',     file: 'meat_3000.png',  type: 'acc',   icon: '🎗️' },
         { amount: 6000,  itemId: 'meat6000',  name: '肉集めキャンプ',     file: 'meat_6000.png',  type: 'bg',    icon: '🏕️' },
-        { amount: 9000,  itemId: 'meat9000',  name: '肉集め遠征服',       file: 'meat_9000.png',  type: 'setup', icon: '🥾' },
+        { amount: 9000,  itemId: 'meat9000',  name: '遠征服',       file: 'meat_9000.png',  type: 'setup', icon: '🥾' },
         { amount: 12000, itemId: 'meat12000', name: '肉マスターの勲章',   file: 'meat_12000.png', type: 'acc',   icon: '🏅' },
-        { amount: 15000, itemId: 'meat15000', name: '伝説の肉集め騎士',   file: 'meat_15000.png', type: 'setup', icon: '👑' }
+        { amount: 15000, itemId: 'meat15000', name: '肉の着ぐるみ',   file: 'meat_15000.png', type: 'setup', icon: '👑' }
     ];
 
     const MEAT_REPORT_LINES = [
         { img: 'lancelot_1.png', msg: '肉集めお疲れさま、団長。着実に増えているな。' },
         { img: 'lancelot_1.png', msg: '報告ありがとう。次も無理のない範囲で頑張ろう。' },
         { img: 'lancelot_5.png', msg: 'それにしても、これだけの肉をどこに置いているんだ……？' },
-        { img: 'lancelot_6.png', msg: 'いい調子だな！団長の働きぶりにはいつも驚かされるよ。' },
-        { img: 'lancelot_1.png', msg: '少しずつスタンプが埋まってきたな。俺も楽しみになってきたぞ。' },
-        { img: 'lancelot_8.png', msg: '休憩も忘れるなよ。甘いものでも食べて一息つこう。' },
-        { img: 'lancelot_1.png', msg: '肉の数を数えるのも、なかなか大変そうだな。報告は俺に任せてくれ。' },
-        { img: 'lancelot_5.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。' },
-        { img: 'lancelot_6.png', msg: 'これだけ集めれば、戦いの準備もかなり進んだんじゃないか？' },
-        { img: 'lancelot_1.png', msg: '今日もよく頑張っているな。俺も団長を見習わないと。' },
-        { img: 'lancelot_5.png', msg: '肉、肉、肉……見ているだけで少し腹が減ってきたな。' },
-        { img: 'lancelot_1.png', msg: '報告を待っていたぞ、団長。順調そうで安心した。' },
-        { img: 'lancelot_4.png', msg: 'かなり集めたな……。無理をしていないか？少し休んでくれよ。' },
-        { img: 'lancelot_6.png', msg: 'この調子なら最後のスタンプまで届きそうだな！' },
-        { img: 'lancelot_1.png', msg: 'ひとつずつ埋まっていくのを見ると、なんだか達成感があるな。' },
-        { img: 'lancelot_5.png', msg: '団長、この肉は全部本当に必要なんだよな……？' },
-        { img: 'lancelot_8.png', msg: '周回のしすぎで眠くなっていないか？俺は少し眠いぞ……。' },
-        { img: 'lancelot_1.png', msg: 'よし、今回の分も記録しておいたぞ。次の報告も待っている。' },
-        { img: 'lancelot_6.png', msg: 'またスタンプに近づいたな。限定アイテムまであと少しだ！' },
-        { img: 'lancelot_1.png', msg: '団長とこうして進捗を確認するのも、古戦場の楽しみのひとつかもしれないな。' }
+        { img: 'lancelot_6.png', msg: 'ヴェインなら美味しく調理してくれそうだと思わないか？頼んでみるか……' },
+        { img: 'lancelot_1.png', msg: '少しずつスタンプが埋まってきたな。本戦への準備もばっちりだろうか？' },
+        { img: 'lancelot_3.png', msg: 'パーシヴァルに頼んだら全部焼いてくれるかな。ふふっ、バーベキューみたいだ。' },
+        { img: 'lancelot_5.png', msg: '肉の数を数えるのもなかなか大変そうだな。そもそも誰が捌いているんだ……？' },
+        { img: 'lancelot_1.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。' },
+        { img: 'lancelot_3.png', msg: 'これだけ集めれば、戦いの準備もかなり進んだんじゃないか？本戦が楽しみだな！' },
+        { img: 'lancelot_6.png', msg: 'ジークフリートさん、そんな大きなお肉をひと口で！俺も見習います！' },
+        { img: 'lancelot_8.png', msg: '肉、肉、肉……見ているだけで少し腹が減ってきたな。' },
+        { img: 'lancelot_1.png', msg: '俺は甘いものが大好きだが、肉も大好物だ。もっとも、魔物の肉はそんなに食べないが……' },
+        { img: 'lancelot_4.png', msg: 'かなり集めたな……。無理をしていないか？今回はどれだけ走るつもりなんだ？' },
+        { img: 'lancelot_6.png', msg: 'さすがだな、団長！この調子なら最後のスタンプまで届きそうだな！' },
+        { img: 'lancelot_1.png', msg: '肉は多くても少なくても悲しくなるよな。計画が大変だ。いつもお疲れ様！' },
+        { img: 'lancelot_5.png', msg: '食べきれなかった肉はどこへ行っているのだろうか。冷凍して保存しておきたいものだが……' },
+        { img: 'lancelot_8.png', msg: '同じ動作をしていると眠くなってくるよな……俺もまだ鍛錬が足りないのか……？' },
+        { img: 'lancelot_1.png', msg: '団長とこうして進捗を確認するのも、古戦場の楽しみのひとつかもしれないな。' },
+        { img: 'lancelot_3.png', msg: '団長、休憩の予定はないか？お茶をするなら、ぜひ俺も呼んでくれると嬉しいぞ！' },
+        { img: 'lancelot_1.png', msg: '本戦の準備はばっちりだな、団長。日頃の鍛錬の成果を見せる時だ。' }
     ];
 
     function ensureMeatState() {
@@ -45,7 +42,6 @@
         if (!state.meatRewardReceived || typeof state.meatRewardReceived !== 'object' || Array.isArray(state.meatRewardReceived)) state.meatRewardReceived = {};
         if (!Number.isSafeInteger(state.meatLastReportTime) || state.meatLastReportTime < 0) state.meatLastReportTime = 0;
 
-        // 旧版の肉箱・拾いものデータは互換性のため消さない。
         if (!state.meatCollection || typeof state.meatCollection !== 'object' || Array.isArray(state.meatCollection)) state.meatCollection = {};
         if (!Number.isSafeInteger(state.meatGiftCount) || state.meatGiftCount < 0) state.meatGiftCount = 0;
         if (!Number.isSafeInteger(state.meatBoxProgress) || state.meatBoxProgress < 0) state.meatBoxProgress = 0;
@@ -251,7 +247,7 @@
         const remaining = getMeatCooldownRemaining();
         if (remaining <= 0) {
             button.disabled = false;
-            text.innerText = '肉を報告できるぞ！';
+            text.innerText = '肉の個数を報告できるぞ！';
             if (meatTimerInterval) {
                 clearInterval(meatTimerInterval);
                 meatTimerInterval = null;
@@ -262,7 +258,7 @@
         const min = Math.floor(remaining / 1000 / 60);
         const sec = Math.floor((remaining / 1000) % 60);
         button.disabled = true;
-        text.innerText = `次の肉報告まで: ${min}分 ${sec}秒`;
+        text.innerText = `次の肉集め報告まで: ${min}分 ${sec}秒`;
     }
 
     function startMeatCooldownTimer() {
@@ -335,7 +331,7 @@
             if (!definition.valid) {
                 console.warn(`[肉スタンプラリー] ${reward.itemId} の items.js 定義が meat.js の想定と一致しません。`, definition.item);
                 if (includeResultLines) {
-                    result.lines.push(`${reward.amount.toLocaleString()}個達成！ 限定報酬の定義を確認してくれ。`);
+                    result.lines.push(`${reward.amount.toLocaleString()}個達成！ エラーが出てしまったぞ。開発者への連絡を頼む。`);
                 }
                 return;
             }
@@ -348,7 +344,7 @@
             result.changed = true;
 
             if (includeResultLines) {
-                result.lines.push(`${reward.amount.toLocaleString()}個達成！ 限定${getRewardTypeLabel(reward.type)}「${reward.name}」を解放！`);
+                result.lines.push(`${reward.amount.toLocaleString()}個達成！ 肉集め報酬${getRewardTypeLabel(reward.type)}「${reward.name}」を解放！`);
             }
         });
 
@@ -387,7 +383,7 @@
                 <div class="meat-rally-card meat-next-reward" style="text-align:center;">
                     <div style="font-size:22px; margin-bottom:3px;">🎉</div>
                     <div style="font-size:15px; font-weight:bold; color:#8e2d41;">15,000個コンプリート！</div>
-                    <div style="font-size:12px; color:#64748b; margin-top:3px;">限定報酬5種をすべて達成したぞ。</div>
+                    <div style="font-size:12px; color:#64748b; margin-top:3px;">肉集め報酬5種をすべて達成したぞ。</div>
                 </div>`;
         }
 
@@ -480,11 +476,11 @@
 
                 <div class="status-container">
                     <div class="status-card">
-                        <span class="label">🥩 現在の肉</span>
+                        <span class="label">🥩 現在の肉の個数</span>
                         <span class="val">${state.meatTotal.toLocaleString()}個</span>
                     </div>
                     <div class="status-card">
-                        <span class="label">📣 肉報告</span>
+                        <span class="label">📣 肉集め報告</span>
                         <span class="val">${state.meatReportCount}回</span>
                     </div>
                     <div class="status-card">
@@ -494,8 +490,8 @@
                 </div>
 
                 <div class="input-group">
-                    <input type="number" id="input-meat" max="${MEAT_MAX_TOTAL}" placeholder="現在の累計肉数を入力（最大15,000）" onkeydown="if(['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();">
-                    <button id="btn-meat-report" onclick="reportMeat()" style="min-width:130px; background-color:#c0392b;">肉を報告する</button>
+                    <input type="number" id="input-meat" max="${MEAT_MAX_TOTAL}" placeholder="現在の肉の個数を入力（最大15,000）" onkeydown="if(['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();">
+                    <button id="btn-meat-report" onclick="reportMeat()" style="min-width:130px; background-color:#c0392b;">肉集めの報告をする</button>
                 </div>
 
                 <div id="meat-cooldown-text" style="color:#c0392b; font-size:13px; font-weight:bold; min-height:20px; display:flex; align-items:center;"></div>
@@ -504,7 +500,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:end; gap:10px;">
                         <div>
                             <div style="font-size:13px; font-weight:bold; color:#8e2d41;">肉スタンプラリー</div>
-                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${stampCount >= 15 ? '全15スタンプ達成！' : `次のスタンプまであと ${nextStamp.toLocaleString()}個`}</div>
+                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${stampCount >= 15 ? '全ての報酬を取得しました！' : `次のスタンプまであと ${nextStamp.toLocaleString()}個`}</div>
                         </div>
                         <div style="font-size:13px; font-weight:bold; color:#8e2d41; white-space:nowrap;">${progressTotal.toLocaleString()} / ${MEAT_MAX_TOTAL.toLocaleString()}</div>
                     </div>
@@ -522,13 +518,13 @@
                         <span style="font-size:10px; color:#64748b;">✓ 達成　<span style="color:#c0392b; font-weight:bold;">赤枠＝次</span>　○ 未達成</span>
                     </div>
                     <div class="meat-stamp-grid">${renderStampRally()}</div>
-                    <div style="font-size:11px; color:#8e2d41; margin-top:9px;">🎁 3,000個ごとに限定着せ替え報酬</div>
+                    <div style="font-size:11px; color:#8e2d41; margin-top:9px;">🎁 3,000個ごとに肉集め報酬を取得できます</div>
                 </div>
 
                 ${resultHtml}
 
                 <div class="meat-rally-card">
-                    <div style="font-size:13px; font-weight:bold; color:#8e2d41; margin-bottom:9px;">限定着せ替え報酬</div>
+                    <div style="font-size:13px; font-weight:bold; color:#8e2d41; margin-bottom:9px;">肉集め着せ替え報酬</div>
                     <div class="meat-reward-grid">${renderRewardList()}</div>
                 </div>
             </div>`;
@@ -554,7 +550,7 @@
         applyMeatTheme(true);
         renderMeatPanel();
         startMeatCooldownTimer();
-        setMeatLancelotMessage('肉集めモードだな。15,000個まで、俺と一緒にスタンプを埋めていこう！', 'lancelot_1.png');
+        setMeatLancelotMessage('団長、お疲れ様。集めた肉の個数を報告してくれ！', 'lancelot_1.png');
     }
 
     function closeMeatMode() {
@@ -574,7 +570,7 @@
         applyMeatTheme(false);
         stopMeatCooldownTimer();
         updateCooldownUI();
-        setMeatLancelotMessage('貢献度の報告に戻るんだな。了解したぞ、団長。', 'lancelot_1.png');
+        setMeatLancelotMessage('貢献度の報告に戻るんだな。応援しているぞ、団長。', 'lancelot_1.png');
     }
 
     function reportMeat() {
@@ -584,20 +580,20 @@
 
         const inputValStr = input.value.trim();
         if (inputValStr === '' || !/^\d+$/.test(inputValStr)) {
-            setMeatLancelotMessage('団長、その肉数はうまく読めないぞ。数字だけで入力してくれ。', 'lancelot_2.png');
+            setMeatLancelotMessage('団長、その報告はうまく読めないぞ。数字だけで入力してくれ。', 'lancelot_2.png');
             return;
         }
 
         const inputVal = Number(inputValStr);
         if (!Number.isSafeInteger(inputVal) || inputVal < 0 || inputVal > MEAT_MAX_TOTAL) {
-            setMeatLancelotMessage('肉集めスタンプラリーは15,000個までだぞ。入力を確認してくれ。', 'lancelot_2.png');
+            setMeatLancelotMessage('肉集めスタンプラリーは15,000個までだぞ。入力を確認してくれ。', 'lancelot_1.png');
             return;
         }
 
         const cooldownRemaining = getMeatCooldownRemaining();
         if (cooldownRemaining > 0) {
             const remainMin = Math.ceil(cooldownRemaining / 1000 / 60);
-            setMeatLancelotMessage(`少し休憩したらどうだ？ 次の肉報告まであと ${remainMin} 分だ。`, 'lancelot_1.png');
+            setMeatLancelotMessage(`少し休憩したらどうだ？ 次の報告時間まであと ${remainMin} 分だ。`, 'lancelot_1.png');
             updateMeatCooldownUI();
             return;
         }
@@ -634,7 +630,7 @@
 
         resultLines.push(...rewardResult.lines);
         if (state.meatTotal >= MEAT_MAX_TOTAL) {
-            resultLines.push('15,000個達成！ 肉集めスタンプラリーコンプリート！');
+            resultLines.push('15,000個達成！ すごいな、団長。肉集めスタンプラリーコンプリートだぞ！');
         }
 
         if (rewardResult.unlockedSomething) {
