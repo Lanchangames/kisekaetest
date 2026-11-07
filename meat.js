@@ -1,3 +1,4 @@
+
 (() => {
     const MEAT_MAX_TOTAL = 15000;
     const MEAT_STAMP_STEP = 1000;
@@ -490,7 +491,7 @@
                 </div>
 
                 <div class="input-group">
-                    <input type="number" id="input-meat" max="${MEAT_MAX_TOTAL}" placeholder="現在の肉の個数を入力（最大15,000）" onkeydown="if(['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();">
+                    <input type="number" id="input-meat" placeholder="現在の肉の個数を入力" onkeydown="if(['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();">
                     <button id="btn-meat-report" onclick="reportMeat()" style="min-width:130px; background-color:#c0392b;">肉集めの報告をする</button>
                 </div>
 
@@ -585,8 +586,8 @@
         }
 
         const inputVal = Number(inputValStr);
-        if (!Number.isSafeInteger(inputVal) || inputVal < 0 || inputVal > MEAT_MAX_TOTAL) {
-            setMeatLancelotMessage('肉集めスタンプラリーは15,000個までだぞ。入力を確認してくれ。', 'lancelot_1.png');
+        if (!Number.isSafeInteger(inputVal) || inputVal < 0) {
+            setMeatLancelotMessage('団長、その報告はうまく読めないぞ。正しい肉の個数を入力してくれ。', 'lancelot_1.png');
             return;
         }
 
