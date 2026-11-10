@@ -45,8 +45,8 @@
         { min: 13600, img: 'lancelot_1.png', msg: '団長とこうして進捗を確認するのも、古戦場の楽しみのひとつかもしれないな。' },
         { min: 14400, img: 'lancelot_3.png', msg: '団長、休憩の予定はないか？お茶をするなら、ぜひ俺も呼んでくれると嬉しいぞ！' },
         { min: 15000, img: 'lancelot_1.png', msg: '本戦の準備はばっちりだな、団長。日頃の鍛錬の成果を見せる時だ。' },
-        { min: 20000, img: 'lancelot_6.png', msg: 'スタンプラリーは終わったのに、まだこんなに集めているのか。団長の本気には驚かされるな！' },
-        { min: 30000, img: 'lancelot_4.png', msg: 'すさまじい数だな！？団長、これはもう肉の山というより山脈だ……！本戦前に埋もれないでくれよ。' }
+        { min: 20000, img: 'lancelot_6.png', msg: '20,000個……！スタンプラリーは終わったのに、まだこんなに集めているのか。団長の本気には驚かされるな！' },
+        { min: 30000, img: 'lancelot_4.png', msg: '30,000個！？団長、これはもう肉の山というより山脈だな……！本戦前に埋もれないでくれよ。' }
     ];
 
     const MEAT_FIND_ITEMS = [
@@ -1284,7 +1284,7 @@
                     <div style="display:grid; grid-auto-rows:1fr; gap:10px; flex-shrink:0; min-width:150px;">
                         <button id="btn-meat-report" onclick="reportMeat()" style="width:100%; height:100%; background-color:#c0392b;">肉集めの報告をする</button>
                         <button id="btn-meat-fix" onclick="fixMeat()" style="width:100%; height:100%; background-color:#f39c12;">
-                            肉の数を修正<br><span style="font-size:10px;">（報酬は増加しません。）</span>
+                            肉数修正<br><span style="font-size:10px;">（報酬は増加しません。）</span>
                         </button>
                     </div>
                 </div>
@@ -1310,7 +1310,7 @@
 
                 <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
-                        <strong style="font-size:13px; color:#8e2d41;">１５個のスタンプ</strong>
+                        <strong style="font-size:13px; color:#8e2d41;">15個のスタンプ</strong>
                         <span style="font-size:10px; color:#64748b;">
                             達成済み　<span style="color:#b56b0b; font-weight:bold;">橙枠＝次回解放</span>　
                             <span style="color:#c0392b; font-weight:bold;">赤枠＝次</span>
@@ -1343,13 +1343,14 @@
     function showMeatHelp() {
         showCustomAlert(
             '【肉集めモード】\n\n' +
-            '現在集めている肉の個数を報告するモードです。報告は１５分に１回できます。\n\n' +
-            '・１，０００個ごとにスタンプを１個獲得します。\n' +
-            '・スタンプ報酬は全部５個です。到達した報酬は次の報告で解放されます。\n' +
-            '・入力を間違えた場合は「肉の数を修正」を使ってください。修正では報酬や報告回数は増えません。\n' +
-            '・肉１００個につき「肉の山」に🍖が１個積み上がります。報酬欄の「肉の山を見る」から確認できます。\n' +
-            '・肉の山には「みつけもの」が紛れ込むことも。見つけたらクリックしてみてください。\n' +
-            '・登録できる肉の数は２００,０００個までです。'
+            '現在集めている肉の個数を報告するモードです。報告は15分に1回できます。\n\n' +
+            '・1,000個ごとにスタンプを1個獲得します。\n' +
+            '・3,000 / 6,000 / 9,000 / 12,000 / 15,000個で着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。\n' +
+            '・入力を間違えた場合は「肉数修正」を使ってください。修正では報酬や報告回数は増えません。\n' +
+            '・肉100個につき「肉の山」に🍖が1個積み上がります。報酬欄の「肉の山を見る」から確認できます。\n' +
+            '・800個以上では、成功報告時に30%の確率で肉の山に「みつけもの」が紛れ込みます。発見済みも再登場しますが、未発見のものが少しだけ出やすくなっています。\n' +
+            '・15,000個で肉集め報酬コンプリートです。15,000個を超えた後も報告できます。\n' +
+            '・200,000個以上の肉数は記録できません。'
         );
     }
 
@@ -1427,7 +1428,7 @@
         ];
 
         if (previousTotal < MEAT_MAX_TOTAL && state.meatTotal >= MEAT_MAX_TOTAL) {
-            resultLines.push('１５,０００個達成！ 肉集めスタンプラリーコンプリート！');
+            resultLines.push('15,000個達成！ 肉集めスタンプラリーコンプリート！');
         }
 
         if (confirmedResult.unlockedSomething) {
@@ -1486,7 +1487,7 @@
         }
 
         if (inputVal < state.meatTotal) {
-            setMeatLancelotMessage('団長、肉が減っているようだ。肉の数を修正してみてくれ', 'lancelot_5.png');
+            setMeatLancelotMessage('団長、肉が減っているようだ。減らしたい場合は「肉数修正」を使ってくれ。', 'lancelot_5.png');
             return;
         }
 
@@ -1515,7 +1516,7 @@
 
         const inputValStr = input.value.trim();
         if (inputValStr === '' || !/^\d+$/.test(inputValStr)) {
-            setMeatLancelotMessage('そんな肉の数はあり得ないと思うが……修正する数字を確認してくれ。', 'lancelot_2.png');
+            setMeatLancelotMessage('そんな肉数はあり得ないと思うが……修正する数字を確認してくれ。', 'lancelot_2.png');
             return;
         }
 
@@ -1540,7 +1541,7 @@
         saveGame();
         renderMeatPanel();
 
-        let message = `肉の数を ${oldTotal.toLocaleString()}個から ${inputVal.toLocaleString()}個に修正したぞ。`;
+        let message = `肉数を ${oldTotal.toLocaleString()}個から ${inputVal.toLocaleString()}個に修正したぞ。`;
         if (canceled) {
             message += ' 条件を下回った報酬は取り消しておいた。';
         }
