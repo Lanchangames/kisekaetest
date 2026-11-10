@@ -9,10 +9,12 @@
     const MEAT_PILE_UNIT = 100;
     const MEAT_PILE_FONT_SIZE = 42;
     const MEAT_PILE_ANIMATION_MAX = 40;
-    const MEAT_FIND_REPORT_INTERVAL = 3;
+    const MEAT_FIND_CHANCE = 0.30;
+    const MEAT_FIND_UNFOUND_WEIGHT = 1.35;
     let meatTimerInterval = null;
     let meatPileAnimationFrame = null;
     let meatFindHitbox = null;
+    let meatPanelView = 'rewards';
 
     const MEAT_STAMP_REWARDS = [
         { amount: 3000,  itemId: 'meat3000',  name: '勲章',           file: 'meat_3000.png',  type: 'acc' },
@@ -315,6 +317,27 @@
                 gap: 12px;
                 width: 100%;
             }
+            .meat-pile-view {
+                position: relative;
+                height: 430px;
+                min-height: 340px;
+                overflow: hidden;
+                border-radius: 12px;
+                background: rgba(255, 244, 235, .98);
+                border: 1px solid rgba(142,45,65,.18);
+                box-shadow: inset 0 -18px 32px rgba(142,45,65,.06);
+            }
+            .meat-pile-view .meat-pile-canvas {
+                opacity: 1;
+                cursor: pointer;
+            }
+            .meat-view-switch {
+                padding: 6px 10px;
+                font-size: 11px;
+                background-color: #b97888;
+                box-shadow: none;
+                white-space: nowrap;
+            }
             .meat-find-grid {
                 display: grid;
                 grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -431,6 +454,7 @@
             }
 
             @media (max-width: 768px) {
+                .meat-pile-view { height: 360px; min-height: 300px; }
                 .meat-reward-item { grid-template-columns: 42px 1fr; }
                 .meat-reward-status { grid-column: 2; text-align: left; }
                 .meat-reward-icon { width: 40px; height: 40px; }
@@ -569,15 +593,24 @@
 
     function maybeSpawnMeatFind() {
         if (state.meatCurrentFind || state.meatTotal < 800) return false;
+        if (Math.random() >= MEAT_FIND_CHANCE) return false;
 
-        const remaining = getUnfoundMeatItems();
-        if (remaining.length === 0) return false;
+        const weighted = MEAT_FIND_ITEMS.map(item => ({
+            item,
+            weight: state.meatCollection[item.key] ? 1 : MEAT_FIND_UNFOUND_WEIGHT
+        }));
+        const totalWeight = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * totalWeight;
 
-        state.meatFindReportCounter++;
-        if (state.meatFindReportCounter < MEAT_FIND_REPORT_INTERVAL) return false;
+        for (const entry of weighted) {
+            roll -= entry.weight;
+            if (roll < 0) {
+                state.meatCurrentFind = entry.item.key;
+                return true;
+            }
+        }
 
-        state.meatFindReportCounter = 0;
-        state.meatCurrentFind = remaining[0].key;
+        state.meatCurrentFind = weighted[weighted.length - 1].item.key;
         return true;
     }
 
@@ -1175,6 +1208,35 @@
         }).join('');
     }
 
+    function renderMeatRewardOrPileCard() {
+        if (meatPanelView === 'pile') {
+            return `
+                <div class="meat-rally-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:9px;">
+                        <div style="font-size:13px; font-weight:bold; color:#8e2d41;">🍖 肉の山</div>
+                        <button class="meat-view-switch" onclick="setMeatPanelView('rewards')">🎁 報酬を見る</button>
+                    </div>
+                    <div class="meat-pile-view">
+                        <canvas id="meat-pile-canvas" class="meat-pile-canvas"></canvas>
+                    </div>
+                </div>`;
+        }
+
+        return `
+            <div class="meat-rally-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:9px;">
+                    <div style="font-size:13px; font-weight:bold; color:#8e2d41;">報酬</div>
+                    <button class="meat-view-switch" onclick="setMeatPanelView('pile')">🍖 肉の山を見る</button>
+                </div>
+                <div class="meat-reward-grid">${renderRewardList()}</div>
+            </div>`;
+    }
+
+    function setMeatPanelView(view) {
+        meatPanelView = view === 'pile' ? 'pile' : 'rewards';
+        renderMeatPanel();
+    }
+
     function renderMeatPanel(result = null, newPilePieces = 0) {
         ensureMeatState();
         const panel = document.getElementById('meat-mode-panel');
@@ -1195,12 +1257,10 @@
 
         panel.innerHTML = `
             <div class="meat-mode-root" style="width:100%;">
-                <div class="meat-pile-background">
-                    <canvas id="meat-pile-canvas" class="meat-pile-canvas"></canvas>
-                </div>
                 <div class="meat-mode-foreground">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                    <h3 style="margin:0; color:#8e2d41;">🥩 肉集めモード</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <h3 style="margin:0; color:#8e2d41; flex:1; min-width:130px;">🥩 肉集めモード</h3>
+                    <button onclick="showMeatHelp()" style="padding:8px 12px; background-color:#b97888;">？ ヘルプ</button>
                     <button onclick="closeMeatMode()" style="padding:8px 12px; background-color:#64748b;">← 貢献度モードに戻る</button>
                 </div>
 
@@ -1263,10 +1323,7 @@
 
                 ${resultHtml}
 
-                <div class="meat-rally-card">
-                    <div style="font-size:13px; font-weight:bold; color:#8e2d41; margin-bottom:9px;">報酬</div>
-                    <div class="meat-reward-grid">${renderRewardList()}</div>
-                </div>
+                ${renderMeatRewardOrPileCard()}
                 </div>
             </div>`;
 
@@ -1276,7 +1333,25 @@
         const root = panel.querySelector('.meat-mode-root');
         if (root) root.addEventListener('click', handleMeatPileClick);
 
-        requestAnimationFrame(() => renderMeatPile(newPilePieces));
+        if (meatPanelView === 'pile') {
+            requestAnimationFrame(() => renderMeatPile(newPilePieces));
+        } else {
+            meatFindHitbox = null;
+        }
+    }
+
+    function showMeatHelp() {
+        showCustomAlert(
+            '【肉集めモード】\n\n' +
+            '現在集めている肉の個数を報告するモードです。報告は15分に1回できます。\n\n' +
+            '・1,000個ごとにスタンプを1個獲得します。\n' +
+            '・3,000 / 6,000 / 9,000 / 12,000 / 15,000個で着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。\n' +
+            '・入力を間違えた場合は「肉数修正」を使ってください。修正では報酬や報告回数は増えません。\n' +
+            '・肉100個につき「肉の山」に🍖が1個積み上がります。報酬欄の「肉の山を見る」から確認できます。\n' +
+            '・800個以上では、成功報告時に30%の確率で肉の山に「みつけもの」が紛れ込みます。発見済みも再登場しますが、未発見のものが少しだけ出やすくなっています。\n' +
+            '・15,000個で肉集め報酬コンプリートです。15,000個を超えた後も報告できます。\n' +
+            '・200,000個以上の肉数は記録できません。'
+        );
     }
 
     function openMeatMode() {
@@ -1498,6 +1573,8 @@
 
     window.initMeatMode = initMeatMode;
     window.openMeatMode = openMeatMode;
+    window.showMeatHelp = showMeatHelp;
+    window.setMeatPanelView = setMeatPanelView;
     window.closeMeatMode = closeMeatMode;
     window.reportMeat = reportMeat;
     window.fixMeat = fixMeat;
