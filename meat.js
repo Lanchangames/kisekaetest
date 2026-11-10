@@ -4,7 +4,9 @@
     const MEAT_STAMP_STEP = 1000;
     const MEAT_COOLDOWN_MS = 15 * 60 * 1000;
     const MEAT_STAMP_IMAGE = 'meat_stamp.png';
-    const MEAT_PILE_ANIMATION_MAX = 80;
+    const MEAT_PILE_UNIT = 100;
+    const MEAT_PILE_FONT_SIZE = 32;
+    const MEAT_PILE_ANIMATION_MAX = 40;
     let meatTimerInterval = null;
     let meatPileAnimationFrame = null;
 
@@ -221,31 +223,31 @@
                 text-align: right;
             }
 
-            .meat-pile-stage {
+            .meat-mode-root {
                 position: relative;
-                height: 180px;
+                isolation: isolate;
+            }
+            .meat-pile-background {
+                position: absolute;
+                inset: 0;
+                z-index: 0;
                 overflow: hidden;
-                border-radius: 10px;
-                border: 1px solid #efb7c3;
-                background: linear-gradient(to bottom, rgba(255,255,255,.96), rgba(255,239,242,.94));
+                pointer-events: none;
+                border-radius: 12px;
             }
             .meat-pile-canvas {
                 display: block;
                 width: 100%;
-                height: 180px;
+                height: 100%;
+                opacity: .82;
             }
-            .meat-pile-label {
-                position: absolute;
-                top: 8px;
-                left: 9px;
-                z-index: 2;
-                padding: 3px 7px;
-                border-radius: 999px;
-                background: rgba(255,255,255,.88);
-                color: #8e2d41;
-                font-size: 10px;
-                font-weight: bold;
-                pointer-events: none;
+            .meat-mode-foreground {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
             }
 
             @media (max-width: 768px) {
@@ -478,7 +480,7 @@
         return `
             <div class="meat-reward-icon">
                 <img
-                    src="${escapeHtml(reward.file)}"
+                    src="${escapeHtml(typeof getItemImagePath === 'function' ? getItemImagePath(reward.file) : reward.file)}"
                     alt="${escapeHtml(reward.name)}"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
                 >
@@ -488,7 +490,7 @@
     }
 
     function getMeatPieceCount() {
-        return Math.floor(state.meatTotal / 10);
+        return Math.floor(state.meatTotal / MEAT_PILE_UNIT);
     }
 
     function meatHash(seed) {
@@ -497,13 +499,15 @@
     }
 
     function setupMeatPileCanvas(canvas) {
-        const rect = canvas.getBoundingClientRect();
-        const width = Math.max(260, Math.floor(rect.width || (canvas.parentElement ? canvas.parentElement.clientWidth : 420) || 420));
-        const height = 180;
+        const host = canvas.parentElement;
+        const rect = host ? host.getBoundingClientRect() : canvas.getBoundingClientRect();
+        const width = Math.max(260, Math.floor(rect.width || 420));
+        const height = Math.max(320, Math.floor(rect.height || 620));
         const dpr = Math.max(1, window.devicePixelRatio || 1);
 
         canvas.width = Math.floor(width * dpr);
         canvas.height = Math.floor(height * dpr);
+        canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
 
         const ctx = canvas.getContext('2d');
@@ -512,25 +516,25 @@
     }
 
     function getMeatPiecePosition(index, totalCount, width, height) {
-        const columns = Math.max(18, Math.floor(width / 12));
+        const columns = Math.max(6, Math.floor(width / (MEAT_PILE_FONT_SIZE * 0.78)));
         const rows = Math.max(1, Math.ceil(totalCount / columns));
-        const rowStep = Math.max(2.4, Math.min(7, (height - 24) / rows));
+        const rowStep = Math.max(9, Math.min(MEAT_PILE_FONT_SIZE * 0.62, (height - 30) / Math.max(1, rows)));
         const colWidth = width / columns;
         const row = Math.floor(index / columns);
         const col = index % columns;
 
-        const jitterX = (meatHash(index * 3 + 1) - 0.5) * colWidth * 0.8;
-        const jitterY = (meatHash(index * 7 + 2) - 0.5) * 3;
+        const jitterX = (meatHash(index * 3 + 1) - 0.5) * colWidth * 0.58;
+        const jitterY = (meatHash(index * 7 + 2) - 0.5) * 7;
 
         return {
-            x: Math.max(7, Math.min(width - 7, (col + 0.5) * colWidth + jitterX)),
-            y: Math.max(16, height - 8 - row * rowStep + jitterY)
+            x: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(width - MEAT_PILE_FONT_SIZE / 2, (col + 0.5) * colWidth + jitterX)),
+            y: Math.max(MEAT_PILE_FONT_SIZE / 2, height - 12 - row * rowStep + jitterY)
         };
     }
 
     function drawMeatPileBase(ctx, count, totalCount, width, height) {
         ctx.clearRect(0, 0, width, height);
-        ctx.font = '14px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.font = `${MEAT_PILE_FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -557,8 +561,7 @@
             return;
         }
 
-        const animationLimit = totalCount > 5000 ? 30 : MEAT_PILE_ANIMATION_MAX;
-        const animateCount = Math.max(0, Math.min(newPieceCount, animationLimit, totalCount));
+        const animateCount = Math.max(0, Math.min(newPieceCount, MEAT_PILE_ANIMATION_MAX, totalCount));
 
         if (animateCount === 0) {
             drawMeatPileBase(ctx, totalCount, totalCount, width, height);
@@ -571,7 +574,7 @@
         const animate = now => {
             drawMeatPileBase(ctx, staticCount, totalCount, width, height);
 
-            ctx.font = '14px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+            ctx.font = `${MEAT_PILE_FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -633,7 +636,7 @@
                     ${isNext && !rewardPending ? '<span class="meat-stamp-next-tag">NEXT</span>' : ''}
                     <img
                         class="meat-stamp-image"
-                        src="${MEAT_STAMP_IMAGE}"
+                        src="${typeof getItemImagePath === 'function' ? getItemImagePath(MEAT_STAMP_IMAGE) : MEAT_STAMP_IMAGE}"
                         alt="スタンプ"
                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                     >
@@ -663,9 +666,6 @@
                             <div style="font-size:15px; font-weight:bold; color:#7a4a0b; margin-top:1px;">${escapeHtml(reward.name)}</div>
                             <div style="font-size:12px; font-weight:bold; color:#b56b0b; margin-top:4px;">次の報告で解放できます。${more}</div>
                         </div>
-                    </div>
-                    <div style="font-size:11px; line-height:1.6; color:#7a4a0b; margin-top:8px;">
-                        肉数を間違えていた場合は、次の報告をする前に「肉数修正」で直してください。
                     </div>
                 </div>`;
         }
@@ -756,7 +756,6 @@
         const progressTotal = getProgressTotal();
         const progressPercent = Math.min(100, (progressTotal / MEAT_MAX_TOTAL) * 100);
         const nextStamp = stampCount >= 15 ? 0 : ((stampCount + 1) * MEAT_STAMP_STEP - progressTotal);
-        const meatPieceCount = getMeatPieceCount();
 
         let resultHtml = '';
         if (result && result.lines && result.lines.length > 0) {
@@ -767,7 +766,11 @@
         }
 
         panel.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:12px; width:100%;">
+            <div class="meat-mode-root" style="width:100%;">
+                <div class="meat-pile-background">
+                    <canvas id="meat-pile-canvas" class="meat-pile-canvas"></canvas>
+                </div>
+                <div class="meat-mode-foreground">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                     <h3 style="margin:0; color:#8e2d41;">🥩 肉集めモード</h3>
                     <button onclick="closeMeatMode()" style="padding:8px 12px; background-color:#64748b;">← 貢献度モードに戻る</button>
@@ -800,16 +803,6 @@
 
                 <div id="meat-cooldown-text" style="color:#c0392b; font-size:13px; font-weight:bold; min-height:20px; display:flex; align-items:center;"></div>
 
-                <div class="meat-rally-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px;">
-                        <strong style="font-size:13px; color:#8e2d41;">集めた肉</strong>
-                        <span style="font-size:11px; color:#64748b;">${meatPieceCount.toLocaleString()}個の🍖を表示（肉10個＝🍖1個）</span>
-                    </div>
-                    <div class="meat-pile-stage">
-                        <div class="meat-pile-label">🥩 ${state.meatTotal.toLocaleString()}個</div>
-                        <canvas id="meat-pile-canvas" class="meat-pile-canvas"></canvas>
-                    </div>
-                </div>
 
                 <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:end; gap:10px;">
@@ -836,22 +829,19 @@
                         </span>
                     </div>
                     <div class="meat-stamp-grid">${renderStampRally()}</div>
-                    <div style="font-size:11px; color:#8e2d41; margin-top:9px;">🎁 3,000個ごとに報酬。到達した次の報告で解放できます。</div>
                 </div>
 
                 ${resultHtml}
 
                 <div class="meat-rally-card">
-                    <div style="font-size:13px; font-weight:bold; color:#8e2d41; margin-bottom:4px;">報酬</div>
-                    <div style="font-size:11px; color:#64748b; line-height:1.6; margin-bottom:9px;">
-                        条件に到達した報酬はすぐには配布されません。次の通常報告でも条件を満たしていると解放できます。
-                    </div>
+                    <div style="font-size:13px; font-weight:bold; color:#8e2d41; margin-bottom:9px;">報酬</div>
                     <div class="meat-reward-grid">${renderRewardList()}</div>
+                </div>
                 </div>
             </div>`;
 
         updateMeatCooldownUI();
-        renderMeatPile(newPilePieces);
+        requestAnimationFrame(() => renderMeatPile(newPilePieces));
     }
 
     function openMeatMode() {
@@ -927,12 +917,16 @@
         const input = document.getElementById('input-meat');
         if (input) input.value = '';
 
+        const reaction = getRandomReportLine();
+        state.lastMeatReaction = {
+            img: reaction.img,
+            msg: reaction.msg
+        };
+
         updateUI();
         saveGame();
         renderMeatPanel(resultLines.length > 0 ? { lines: resultLines } : null, newPilePieces);
         startMeatCooldownTimer();
-
-        const reaction = getRandomReportLine();
         setMeatLancelotMessage(reaction.msg, reaction.img);
     }
 
@@ -1006,9 +1000,6 @@
         state.highestMeatTotal = Math.max(state.highestMeatTotal, inputVal);
 
         const canceled = cancelInvalidPendingRewards();
-
-        // 修正では報酬を解放しない。条件到達分は次回の通常報告待ちにする。
-        queueReachedRewards(false);
 
         input.value = '';
         saveGame();

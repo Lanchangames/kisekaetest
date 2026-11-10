@@ -877,13 +877,14 @@
                             <button onclick="clearAllEquip()" style="
                                 font-size: 11px;
                                 padding: 5px 8px;
-                                background-color: #e67e22;
+                                background-color: #f6d7b0;
+                                color: #7a4a1f;
                                 border-radius: 6px;
                                 box-shadow: none;
                                 margin: 0;
                                 white-space: nowrap;
                             ">
-                                ↩ リセット
+                                全消去
                             </button>
                         </div>
                     </div>
@@ -1428,6 +1429,17 @@
 
         if (lastLoginAction) {
             pokes.push(lastLoginAction);
+        }
+
+        if (
+            state.lastMeatReaction &&
+            typeof state.lastMeatReaction.img === 'string' &&
+            typeof state.lastMeatReaction.msg === 'string'
+        ) {
+            pokes.push({
+                img: state.lastMeatReaction.img,
+                msg: state.lastMeatReaction.msg
+            });
         }
         
         let currentScoreMsg = "";
