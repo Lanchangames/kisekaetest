@@ -19,9 +19,9 @@
     const MEAT_STAMP_REWARDS = [
         { amount: 3000,  itemId: 'meat3000',  name: '勲章',           file: 'meat_3000.png',  type: 'acc' },
         { amount: 6000,  itemId: 'meat6000',  name: 'マウスカーソル', file: 'meat_6000.png',  type: 'acc' },
-        { amount: 9000,  itemId: 'meat9000',  name: '山盛りの肉',     file: 'meat_9000.png',  type: 'acc' },
-        { amount: 12000, itemId: 'meat12000', name: '肉集め名人',     file: 'meat_12000.png', type: 'setup' },
-        { amount: 15000, itemId: 'meat15000', name: '認証画面',       file: 'meat_15000.png', type: 'bg' }
+        { amount: 9000,  itemId: 'meat9000',  name: '山盛りの肉',     file: 'meat_9000.png',  type: 'bg' },
+        { amount: 12000, itemId: 'meat12000', name: '肉集め名人',     file: 'meat_12000.png', type: 'acc' },
+        { amount: 15000, itemId: 'meat15000', name: '認証画面',       file: 'meat_15000.png', type: 'acc' }
     ];
 
     const MEAT_REPORT_LINES = [
@@ -376,11 +376,10 @@
                 position: relative;
                 z-index: 3;
                 text-align: center;
-                padding: 20px 28px;
-                border-radius: 22px;
-                background: rgba(255,255,255,.92);
-                border: 4px solid #f0a000;
-                box-shadow: 0 0 0 8px rgba(255,210,70,.26), 0 14px 45px rgba(120,45,25,.28);
+                padding: 0;
+                background: transparent;
+                border: none;
+                box-shadow: none;
                 transform: scale(.1) rotate(-7deg);
                 opacity: 0;
                 animation: meatCompleteTitle 3.2s cubic-bezier(.2,.9,.2,1) .42s forwards;
@@ -392,7 +391,7 @@
                 font-weight: 1000;
                 color: #c0392b;
                 letter-spacing: -.04em;
-                text-shadow: 0 4px 0 #fff2b2, 0 8px 18px rgba(192,57,43,.22);
+                text-shadow: 0 3px 0 #fff7d6, 0 0 14px rgba(255,255,255,.95), 0 8px 18px rgba(192,57,43,.24);
             }
             .meat-complete-title .small {
                 display: block;
@@ -842,47 +841,32 @@
         if (totalCount <= 0) return [];
 
         const stage = getMeatPileStage(state.meatTotal);
-        const pileWidth = width * stage.width;
-        const baseColumns = Math.max(5, Math.floor(pileWidth / (MEAT_PILE_FONT_SIZE * 0.58)));
-        const rows = [];
-        let remaining = totalCount;
-        let row = 0;
+        const pileWidth = Math.max(MEAT_PILE_FONT_SIZE * 2, width * stage.width);
+        const pileHeight = Math.max(MEAT_PILE_FONT_SIZE, height * stage.height);
+        const centerX = width / 2;
+        const halfWidth = pileWidth / 2;
+        const bottomY = height - MEAT_PILE_FONT_SIZE * 0.42;
+        const positions = [];
 
-        while (remaining > 0) {
-            const capacity = Math.max(4, baseColumns - Math.floor(row * 0.7));
-            const take = Math.min(capacity, remaining);
-            rows.push(take);
-            remaining -= take;
-            row++;
+        for (let index = 0; index < totalCount; index++) {
+            const xRoll = meatHash(index * 11 + 17);
+            const yRoll = meatHash(index * 17 + 29);
+
+            const x = centerX - halfWidth + MEAT_PILE_FONT_SIZE / 2
+                + xRoll * Math.max(1, pileWidth - MEAT_PILE_FONT_SIZE);
+
+            const distanceFromCenter = Math.min(1, Math.abs(x - centerX) / Math.max(1, halfWidth));
+            const localHeight = pileHeight * (0.28 + 0.72 * (1 - Math.pow(distanceFromCenter, 1.45)));
+            const rise = Math.pow(yRoll, 1.55) * localHeight;
+            const y = bottomY - rise;
+
+            positions.push({
+                x: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(width - MEAT_PILE_FONT_SIZE / 2, x)),
+                y: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(bottomY, y))
+            });
         }
 
-        const pileHeight = Math.max(MEAT_PILE_FONT_SIZE, height * stage.height);
-        const rowStep = rows.length <= 1
-            ? 0
-            : Math.min(MEAT_PILE_FONT_SIZE * 0.56, pileHeight / (rows.length - 1));
-
-        const positions = [];
-        let index = 0;
-
-        rows.forEach((count, rowIndex) => {
-            const rowWidth = Math.min(pileWidth, count * MEAT_PILE_FONT_SIZE * 0.62);
-            const colStep = count <= 1 ? 0 : rowWidth / (count - 1);
-            const startX = width / 2 - rowWidth / 2;
-            const baseY = height - 10 - rowIndex * rowStep;
-
-            for (let col = 0; col < count; col++) {
-                const jitterX = (meatHash(index * 3 + 1) - 0.5) * MEAT_PILE_FONT_SIZE * 0.30;
-                const jitterY = (meatHash(index * 7 + 2) - 0.5) * MEAT_PILE_FONT_SIZE * 0.16;
-                const x = count <= 1 ? width / 2 : startX + col * colStep;
-                positions.push({
-                    x: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(width - MEAT_PILE_FONT_SIZE / 2, x + jitterX)),
-                    y: Math.max(MEAT_PILE_FONT_SIZE / 2, baseY + jitterY)
-                });
-                index++;
-            }
-        });
-
-        return positions;
+        return positions.sort((a, b) => a.y - b.y);
     }
 
     function getCurrentFindPosition(positions) {
@@ -1037,8 +1021,7 @@
         const title = document.createElement('div');
         title.className = 'meat-complete-title';
         title.innerHTML = `
-            <span class="big">15,000</span>
-            <span class="small">肉集め報酬コンプリート！</span>
+            <span class="big">コンプリート！</span>
         `;
         overlay.appendChild(title);
 
@@ -1243,9 +1226,6 @@
         if (!panel) return;
 
         const stampCount = getStampCount();
-        const progressTotal = getProgressTotal();
-        const progressPercent = Math.min(100, (progressTotal / MEAT_MAX_TOTAL) * 100);
-        const nextStamp = stampCount >= 15 ? 0 : ((stampCount + 1) * MEAT_STAMP_STEP - progressTotal);
 
         let resultHtml = '';
         if (result && result.lines && result.lines.length > 0) {
@@ -1293,22 +1273,6 @@
 
 
                 <div class="meat-rally-card">
-                    <div style="display:flex; justify-content:space-between; align-items:end; gap:10px;">
-                        <div>
-                            <div style="font-size:13px; font-weight:bold; color:#8e2d41;">肉集めスタンプラリー</div>
-                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${stampCount >= 15 ? '全スタンプコンプリート！' : `次のスタンプまであと ${nextStamp.toLocaleString()}個`}</div>
-                        </div>
-                        <div style="font-size:13px; font-weight:bold; color:#8e2d41; white-space:nowrap;">${progressTotal.toLocaleString()} / ${MEAT_MAX_TOTAL.toLocaleString()}</div>
-                    </div>
-                    <div class="meat-progress-bar"><div class="meat-progress-fill" style="width:${progressPercent}%;"></div></div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#64748b; margin-top:4px;">
-                        <span>0</span><span>15,000</span>
-                    </div>
-                </div>
-
-                ${renderNextRewardCard()}
-
-                <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
                         <strong style="font-size:13px; color:#8e2d41;">スタンプラリー</strong>
                         </span>
@@ -1338,15 +1302,53 @@
     }
 
     function showMeatHelp() {
-        showCustomAlert(
-            '【肉集めモード】\n\n' +
-            '現在集めている肉の個数を報告するモードです。報告は15分に1回できます。\n\n' +
-            '・1,000個ごとにスタンプを1個獲得します。\n' +
-            '・スタンプが貯まると着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。\n' +
-            '・入力を間違えた場合は「肉の数を修正」を使ってください。\n' +
-            '・肉100個につき「肉の山」に🍖が1個積み上がります。報酬欄の「肉の山を見る」から確認できます。\n' +
-            '・肉の山には変なものが紛れ込んでることも……？\n' 
-        );
+        const modal = document.getElementById('info-modal');
+        const content = document.getElementById('info-content');
+
+        if (!modal || !content) return;
+
+        if (typeof window._meatHelpInfoBackup !== 'string') {
+            window._meatHelpInfoBackup = content.innerHTML;
+        }
+
+        content.innerHTML = `
+            <h2>肉集めモード</h2>
+            <p>
+                現在集めている肉の個数を報告するモードです。報告は15分に1回できます。
+            </p>
+
+            <h2>スタンプラリー</h2>
+            <p>
+                1,000個ごとにスタンプを1個獲得します。<br>
+                スタンプが貯まると着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。
+            </p>
+
+            <h2>肉の数を修正</h2>
+            <p>
+                入力を間違えた場合は「肉の数を修正」を使ってください。
+            </p>
+
+            <h2>肉の山</h2>
+            <p>
+                肉100個につき「肉の山」に🍖が1個積み上がります。報酬欄の「肉の山を見る」から確認できます。<br>
+                肉の山には変なものが紛れ込んでることも……？
+            </p>
+
+            <button onclick="hideMeatHelp()" class="close-btn">閉じる</button>
+        `;
+        modal.style.display = 'flex';
+    }
+
+    function hideMeatHelp() {
+        const modal = document.getElementById('info-modal');
+        const content = document.getElementById('info-content');
+
+        if (modal) modal.style.display = 'none';
+
+        if (content && typeof window._meatHelpInfoBackup === 'string') {
+            content.innerHTML = window._meatHelpInfoBackup;
+            delete window._meatHelpInfoBackup;
+        }
     }
 
     function openMeatMode() {
@@ -1569,6 +1571,7 @@
     window.initMeatMode = initMeatMode;
     window.openMeatMode = openMeatMode;
     window.showMeatHelp = showMeatHelp;
+    window.hideMeatHelp = hideMeatHelp;
     window.setMeatPanelView = setMeatPanelView;
     window.closeMeatMode = closeMeatMode;
     window.reportMeat = reportMeat;
