@@ -1,7 +1,7 @@
 
 (() => {
     const MEAT_MAX_TOTAL = 15000;
-    const MEAT_RECORD_LIMIT = 200000; // 200,000以上は記録しない
+    const MEAT_RECORD_LIMIT = 200000; 
     const MEAT_RECORD_MAX = MEAT_RECORD_LIMIT - 1;
     const MEAT_STAMP_STEP = 1000;
     const MEAT_COOLDOWN_MS = 15 * 60 * 1000;
@@ -1345,7 +1345,7 @@
             '・スタンプが貯まると着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。\n' +
             '・入力を間違えた場合は「肉の数を修正」を使ってください。\n' +
             '・肉100個につき「肉の山」に🍖が1個積み上がります。報酬欄の「肉の山を見る」から確認できます。\n' +
-            '・肉の山には変なものが紛れ込んでることも……？\n' +
+            '・肉の山には変なものが紛れ込んでることも……？\n' 
         );
     }
 
