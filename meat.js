@@ -1005,7 +1005,7 @@
         title.className = 'meat-complete-title';
         title.innerHTML = `
             <span class="big">15,000</span>
-            <span class="small">MEAT STAMP RALLY COMPLETE!</span>
+            <span class="small">肉集め報酬コンプリート！</span>
         `;
         overlay.appendChild(title);
 
@@ -1399,7 +1399,7 @@
         }
 
         if (inputVal >= MEAT_RECORD_LIMIT) {
-            setMeatLancelotMessage('団長、その肉数はさすがに多すぎるぞ……！ 記録できるのは199,999個までだ。', 'lancelot_4.png');
+            setMeatLancelotMessage('そんな数はあり得ないはずだぞ。', 'lancelot_2.png');
             return;
         }
 
@@ -1452,7 +1452,7 @@
         }
 
         if (inputVal >= MEAT_RECORD_LIMIT) {
-            setMeatLancelotMessage('肉数修正でも199,999個までだ。200,000個以上は記録できないぞ。', 'lancelot_4.png');
+            setMeatLancelotMessage('そんな数はあり得ないはずだぞ。', 'lancelot_2.png');
             return;
         }
 
