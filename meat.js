@@ -1,14 +1,18 @@
 
 (() => {
     const MEAT_MAX_TOTAL = 15000;
+    const MEAT_RECORD_LIMIT = 200000; // 200,000以上は記録しない
+    const MEAT_RECORD_MAX = MEAT_RECORD_LIMIT - 1;
     const MEAT_STAMP_STEP = 1000;
     const MEAT_COOLDOWN_MS = 15 * 60 * 1000;
     const MEAT_STAMP_IMAGE = 'meat_stamp.png';
     const MEAT_PILE_UNIT = 100;
-    const MEAT_PILE_FONT_SIZE = 32;
+    const MEAT_PILE_FONT_SIZE = 42;
     const MEAT_PILE_ANIMATION_MAX = 40;
+    const MEAT_FIND_REPORT_INTERVAL = 3;
     let meatTimerInterval = null;
     let meatPileAnimationFrame = null;
+    let meatFindHitbox = null;
 
     const MEAT_STAMP_REWARDS = [
         { amount: 3000,  itemId: 'meat3000',  name: '勲章',           file: 'meat_3000.png',  type: 'acc' },
@@ -19,39 +23,101 @@
     ];
 
     const MEAT_REPORT_LINES = [
-        { img: 'lancelot_1.png', msg: '肉集めお疲れさま、団長。着実に増えているな。' },
-        { img: 'lancelot_1.png', msg: '報告ありがとう。次も無理のない範囲で頑張ろう。' },
-        { img: 'lancelot_5.png', msg: 'それにしても、これだけの肉をどこに置いているんだ……？' },
-        { img: 'lancelot_6.png', msg: 'ヴェインなら美味しく調理してくれそうだと思わないか？頼んでみるか……' },
-        { img: 'lancelot_1.png', msg: '少しずつスタンプが埋まってきたな。本戦への準備もばっちりだろうか？' },
-        { img: 'lancelot_3.png', msg: 'パーシヴァルに頼んだら全部焼いてくれるかな。ふふっ、バーベキューみたいだ。' },
-        { img: 'lancelot_5.png', msg: '肉の数を数えるのもなかなか大変そうだな。そもそも誰が捌いているんだ……？' },
-        { img: 'lancelot_1.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。' },
-        { img: 'lancelot_3.png', msg: 'これだけ集めれば、戦いの準備もかなり進んだんじゃないか？本戦が楽しみだな！' },
-        { img: 'lancelot_6.png', msg: 'ジークフリートさん、そんな大きなお肉をひと口で！俺も見習います！' },
-        { img: 'lancelot_8.png', msg: '肉、肉、肉……見ているだけで少し腹が減ってきたな。' },
-        { img: 'lancelot_1.png', msg: '俺は甘いものが大好きだが、肉も大好物だ。もっとも、魔物の肉はそんなに食べないが……' },
-        { img: 'lancelot_4.png', msg: 'かなり集めたな……。無理をしていないか？今回はどれだけ走るつもりなんだ？' },
-        { img: 'lancelot_6.png', msg: 'さすがだな、団長！この調子なら最後のスタンプまで届きそうだな！' },
-        { img: 'lancelot_1.png', msg: '肉は多くても少なくても悲しくなるよな。計画が大変だ。いつもお疲れ様！' },
-        { img: 'lancelot_5.png', msg: '食べきれなかった肉はどこへ行っているのだろうか。冷凍して保存しておきたいものだが……' },
-        { img: 'lancelot_8.png', msg: '同じ動作をしていると眠くなってくるよな……俺もまだ鍛錬が足りないのか……？' },
-        { img: 'lancelot_1.png', msg: '団長とこうして進捗を確認するのも、古戦場の楽しみのひとつかもしれないな。' },
-        { img: 'lancelot_3.png', msg: '団長、休憩の予定はないか？お茶をするなら、ぜひ俺も呼んでくれると嬉しいぞ！' },
-        { img: 'lancelot_1.png', msg: '本戦の準備はばっちりだな、団長。日頃の鍛錬の成果を見せる時だ。' }
+        { min: 0,     img: 'lancelot_1.png', msg: '肉集めお疲れさま、団長。着実に増えているな。' },
+        { min: 800,   img: 'lancelot_1.png', msg: '報告ありがとう。次も無理のない範囲で頑張ろう。' },
+        { min: 1600,  img: 'lancelot_5.png', msg: 'それにしても、これだけの肉をどこに置いているんだ……？' },
+        { min: 2400,  img: 'lancelot_6.png', msg: 'ヴェインなら美味しく調理してくれそうだと思わないか？頼んでみるか……' },
+        { min: 3200,  img: 'lancelot_1.png', msg: '少しずつスタンプが埋まってきたな。本戦への準備もばっちりだろうか？' },
+        { min: 4000,  img: 'lancelot_3.png', msg: 'パーシヴァルに頼んだら全部焼いてくれるかな。ふふっ、バーベキューみたいだ。' },
+        { min: 4800,  img: 'lancelot_5.png', msg: '肉の数を数えるのもなかなか大変そうだな。そもそも誰が捌いているんだ……？' },
+        { min: 5600,  img: 'lancelot_1.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。' },
+        { min: 6400,  img: 'lancelot_3.png', msg: 'これだけ集めれば、戦いの準備もかなり進んだんじゃないか？本戦が楽しみだな！' },
+        { min: 7200,  img: 'lancelot_6.png', msg: 'ジークフリートさん、そんな大きなお肉をひと口で！俺も見習います！' },
+        { min: 8000,  img: 'lancelot_8.png', msg: '肉、肉、肉……見ているだけで少し腹が減ってきたな。' },
+        { min: 8800,  img: 'lancelot_1.png', msg: '俺は甘いものが大好きだが、肉も大好物だ。もっとも、魔物の肉はそんなに食べないが……' },
+        { min: 9600,  img: 'lancelot_4.png', msg: 'かなり集めたな……。無理をしていないか？今回はどれだけ走るつもりなんだ？' },
+        { min: 10400, img: 'lancelot_6.png', msg: 'さすがだな、団長！この調子なら最後のスタンプまで届きそうだな！' },
+        { min: 11200, img: 'lancelot_1.png', msg: '肉は多くても少なくても悲しくなるよな。計画が大変だ。いつもお疲れ様！' },
+        { min: 12000, img: 'lancelot_5.png', msg: '食べきれなかった肉はどこへ行っているのだろうか。冷凍して保存しておきたいものだが……' },
+        { min: 12800, img: 'lancelot_8.png', msg: '同じ動作をしていると眠くなってくるよな……俺もまだ鍛錬が足りないのか……？' },
+        { min: 13600, img: 'lancelot_1.png', msg: '団長とこうして進捗を確認するのも、古戦場の楽しみのひとつかもしれないな。' },
+        { min: 14400, img: 'lancelot_3.png', msg: '団長、休憩の予定はないか？お茶をするなら、ぜひ俺も呼んでくれると嬉しいぞ！' },
+        { min: 15000, img: 'lancelot_1.png', msg: '本戦の準備はばっちりだな、団長。日頃の鍛錬の成果を見せる時だ。' },
+        { min: 20000, img: 'lancelot_6.png', msg: '20,000個……！スタンプラリーは終わったのに、まだこんなに集めているのか。団長の本気には驚かされるな！' },
+        { min: 30000, img: 'lancelot_4.png', msg: '30,000個！？団長、さすがにこれは肉の山というより山脈だぞ……！本戦前に埋もれないでくれよ。' }
+    ];
+
+    const MEAT_FIND_ITEMS = [
+        { key: 'pudding',    emoji: '🍮', name: 'プリン',   img: 'lancelot_6.png', msg: 'プリン！どうして肉の中に……？団長、これは俺が預かってもいいだろうか。' },
+        { key: 'crab',       emoji: '🦀', name: 'カニ',     img: 'lancelot_5.png', msg: 'カニ！？肉を集めていたはずなんだが……どこから紛れ込んだんだ？' },
+        { key: 'strawberry', emoji: '🍓', name: 'イチゴ',   img: 'lancelot_3.png', msg: 'イチゴだ！肉ばかり見ていたから、少し甘いものが嬉しいな。' },
+        { key: 'sword',      emoji: '⚔️', name: '剣',       img: 'lancelot_6.png', msg: '剣まで出てきたのか！……少し見せてもらってもいいか？' },
+        { key: 'dragon',     emoji: '🐉', name: '竜',       img: 'lancelot_5.png', msg: '竜まで紛れ込んでいるぞ……。ジークフリートさんなら何か知っているかもしれないな。' },
+        { key: 'snow',       emoji: '❄️', name: '雪の結晶', img: 'lancelot_1.png', msg: '雪の結晶か。肉の山の中にあると、なんだか不思議な眺めだな。' }
     ];
 
     function ensureMeatState() {
-        if (!Number.isSafeInteger(state.meatTotal) || state.meatTotal < 0) state.meatTotal = 0;
-        if (!Number.isSafeInteger(state.highestMeatTotal) || state.highestMeatTotal < 0) state.highestMeatTotal = state.meatTotal;
-        if (!Number.isSafeInteger(state.meatReportCount) || state.meatReportCount < 0) state.meatReportCount = 0;
-        if (!state.meatRewardReceived || typeof state.meatRewardReceived !== 'object' || Array.isArray(state.meatRewardReceived)) state.meatRewardReceived = {};
-        if (!state.meatPendingRewards || typeof state.meatPendingRewards !== 'object' || Array.isArray(state.meatPendingRewards)) state.meatPendingRewards = {};
-        if (!Number.isSafeInteger(state.meatLastReportTime) || state.meatLastReportTime < 0) state.meatLastReportTime = 0;
+        let changed = false;
 
-        if (!state.meatCollection || typeof state.meatCollection !== 'object' || Array.isArray(state.meatCollection)) state.meatCollection = {};
-        if (!Number.isSafeInteger(state.meatGiftCount) || state.meatGiftCount < 0) state.meatGiftCount = 0;
-        if (!Number.isSafeInteger(state.meatBoxProgress) || state.meatBoxProgress < 0) state.meatBoxProgress = 0;
+        if (!Number.isSafeInteger(state.meatTotal) || state.meatTotal < 0) {
+            state.meatTotal = 0;
+            changed = true;
+        } else if (state.meatTotal >= MEAT_RECORD_LIMIT) {
+            state.meatTotal = MEAT_RECORD_MAX;
+            changed = true;
+        }
+
+        if (!Number.isSafeInteger(state.highestMeatTotal) || state.highestMeatTotal < 0) {
+            state.highestMeatTotal = state.meatTotal;
+            changed = true;
+        } else if (state.highestMeatTotal >= MEAT_RECORD_LIMIT) {
+            state.highestMeatTotal = MEAT_RECORD_MAX;
+            changed = true;
+        }
+
+        if (!Number.isSafeInteger(state.meatReportCount) || state.meatReportCount < 0) {
+            state.meatReportCount = 0;
+            changed = true;
+        }
+        if (!state.meatRewardReceived || typeof state.meatRewardReceived !== 'object' || Array.isArray(state.meatRewardReceived)) {
+            state.meatRewardReceived = {};
+            changed = true;
+        }
+        if (!state.meatPendingRewards || typeof state.meatPendingRewards !== 'object' || Array.isArray(state.meatPendingRewards)) {
+            state.meatPendingRewards = {};
+            changed = true;
+        }
+        if (!Number.isSafeInteger(state.meatLastReportTime) || state.meatLastReportTime < 0) {
+            state.meatLastReportTime = 0;
+            changed = true;
+        }
+
+        if (!state.meatCollection || typeof state.meatCollection !== 'object' || Array.isArray(state.meatCollection)) {
+            state.meatCollection = {};
+            changed = true;
+        }
+        if (typeof state.meatCurrentFind !== 'string') {
+            state.meatCurrentFind = '';
+            changed = true;
+        }
+        if (!Number.isSafeInteger(state.meatFindReportCounter) || state.meatFindReportCounter < 0) {
+            state.meatFindReportCounter = 0;
+            changed = true;
+        }
+        if (typeof state.meatCompleteCelebrated !== 'boolean') {
+            state.meatCompleteCelebrated = false;
+            changed = true;
+        }
+        if (!Number.isSafeInteger(state.meatGiftCount) || state.meatGiftCount < 0) {
+            state.meatGiftCount = 0;
+            changed = true;
+        }
+        if (!Number.isSafeInteger(state.meatBoxProgress) || state.meatBoxProgress < 0) {
+            state.meatBoxProgress = 0;
+            changed = true;
+        }
+
+        return changed;
     }
 
     function escapeHtml(value) {
@@ -78,14 +144,14 @@
         const style = document.createElement('style');
         style.id = 'meat-mode-theme-style';
         style.textContent = `
-            body.meat-mode-page { background-color: #ffe4eb !important; }
-            #game-container.mode-top.meat-mode-active { background-color: #ffe4eb !important; }
+            body.meat-mode-page { background-color: var(--meat-bg, #ffe4eb) !important; }
+            #game-container.mode-top.meat-mode-active { background-color: var(--meat-bg, #ffe4eb) !important; }
             #game-container.mode-top.meat-mode-active #content-wrapper,
             #game-container.mode-top.meat-mode-active #ui-area,
-            #game-container.mode-top.meat-mode-active #section-top { background-color: #ffe4eb !important; }
+            #game-container.mode-top.meat-mode-active #section-top { background-color: var(--meat-bg, #ffe4eb) !important; }
 
             .meat-rally-card {
-                background: rgba(255,255,255,0.88);
+                background: rgba(255,255,255,0.76);
                 border: 1px solid #e8a9b7;
                 border-radius: 12px;
                 padding: 12px;
@@ -189,12 +255,12 @@
                 border-radius: 10px;
                 padding: 10px;
                 border: 1px solid #d8dee5;
-                background: #f8fafc;
+                background: rgba(248,250,252,.82);
                 box-sizing: border-box;
             }
-            .meat-reward-item.done { border-color: #86c694; background: #effaf1; }
-            .meat-reward-item.next { border: 2px solid #c0392b; background: #fff1f3; box-shadow: 0 2px 8px rgba(192,57,43,.10); }
-            .meat-reward-item.pending { border: 2px solid #e68a19; background: #fff8eb; box-shadow: 0 2px 8px rgba(230,138,25,.10); }
+            .meat-reward-item.done { border-color: #86c694; background: rgba(239,250,241,.82); }
+            .meat-reward-item.next { border: 2px solid #c0392b; background: rgba(255,241,243,.84); box-shadow: 0 2px 8px rgba(192,57,43,.10); }
+            .meat-reward-item.pending { border: 2px solid #e68a19; background: rgba(255,248,235,.84); box-shadow: 0 2px 8px rgba(230,138,25,.10); }
             .meat-reward-icon {
                 width: 46px;
                 height: 46px;
@@ -239,7 +305,7 @@
                 display: block;
                 width: 100%;
                 height: 100%;
-                opacity: .82;
+                opacity: .98;
             }
             .meat-mode-foreground {
                 position: relative;
@@ -248,6 +314,120 @@
                 flex-direction: column;
                 gap: 12px;
                 width: 100%;
+            }
+            .meat-find-grid {
+                display: grid;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 6px;
+            }
+            .meat-find-cell {
+                height: 44px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255,255,255,.74);
+                border: 1px solid rgba(142,45,65,.18);
+                font-size: 23px;
+                box-sizing: border-box;
+            }
+            .meat-find-cell.locked {
+                color: #b6a2a8;
+                font-size: 17px;
+                background: rgba(255,255,255,.48);
+            }
+
+            .meat-complete-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 20000;
+                overflow: hidden;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255, 235, 190, 0);
+                animation: meatCompleteFlash 3.6s ease-out forwards;
+            }
+            .meat-complete-title {
+                position: relative;
+                z-index: 3;
+                text-align: center;
+                padding: 20px 28px;
+                border-radius: 22px;
+                background: rgba(255,255,255,.92);
+                border: 4px solid #f0a000;
+                box-shadow: 0 0 0 8px rgba(255,210,70,.26), 0 14px 45px rgba(120,45,25,.28);
+                transform: scale(.1) rotate(-7deg);
+                opacity: 0;
+                animation: meatCompleteTitle 3.2s cubic-bezier(.2,.9,.2,1) .42s forwards;
+            }
+            .meat-complete-title .big {
+                display: block;
+                font-size: clamp(42px, 10vw, 92px);
+                line-height: .95;
+                font-weight: 1000;
+                color: #c0392b;
+                letter-spacing: -.04em;
+                text-shadow: 0 4px 0 #fff2b2, 0 8px 18px rgba(192,57,43,.22);
+            }
+            .meat-complete-title .small {
+                display: block;
+                margin-top: 8px;
+                font-size: clamp(16px, 3.4vw, 28px);
+                font-weight: 900;
+                color: #8e2d41;
+                letter-spacing: .08em;
+            }
+            .meat-complete-drop {
+                position: absolute;
+                top: -80px;
+                z-index: 2;
+                font-size: 44px;
+                line-height: 1;
+                animation-name: meatCompleteDrop;
+                animation-timing-function: cubic-bezier(.18,.74,.28,1);
+                animation-fill-mode: forwards;
+            }
+            .meat-stamp-cell.meat-complete-pulse {
+                animation: meatStampCompletePulse .52s ease-out both;
+            }
+            #game-container.meat-complete-burst {
+                animation: meatContainerBurst .85s ease-out;
+            }
+            @keyframes meatCompleteFlash {
+                0%   { background: rgba(255,255,255,0); }
+                8%   { background: rgba(255,255,255,.92); }
+                18%  { background: rgba(255,210,90,.28); }
+                28%  { background: rgba(255,255,255,.68); }
+                42%  { background: rgba(255,190,95,.18); }
+                100% { background: rgba(255,235,190,0); }
+            }
+            @keyframes meatCompleteTitle {
+                0%   { transform: scale(.1) rotate(-7deg); opacity: 0; }
+                18%  { transform: scale(1.18) rotate(3deg); opacity: 1; }
+                30%  { transform: scale(.96) rotate(-1deg); opacity: 1; }
+                42%  { transform: scale(1.03) rotate(0deg); opacity: 1; }
+                80%  { transform: scale(1) rotate(0deg); opacity: 1; }
+                100% { transform: scale(1.08) rotate(0deg); opacity: 0; }
+            }
+            @keyframes meatCompleteDrop {
+                0%   { transform: translateY(-12vh) rotate(0deg) scale(.75); opacity: 0; }
+                8%   { opacity: 1; }
+                82%  { opacity: 1; }
+                100% { transform: translateY(112vh) rotate(720deg) scale(1.15); opacity: 0; }
+            }
+            @keyframes meatStampCompletePulse {
+                0%   { transform: scale(1); box-shadow: none; }
+                38%  { transform: scale(1.24); box-shadow: 0 0 0 6px rgba(255,193,7,.22), 0 0 22px rgba(255,152,0,.65); }
+                100% { transform: scale(1); box-shadow: none; }
+            }
+            @keyframes meatContainerBurst {
+                0%   { transform: scale(1); }
+                25%  { transform: scale(1.012); }
+                48%  { transform: scale(.996); }
+                72%  { transform: scale(1.005); }
+                100% { transform: scale(1); }
             }
 
             @media (max-width: 768px) {
@@ -268,6 +448,7 @@
         ensureMeatThemeStyle();
         const gc = document.getElementById('game-container');
         if (active) {
+            updateMeatThemeColor();
             document.body.classList.add('meat-mode-page');
             if (gc) gc.classList.add('meat-mode-active');
         } else {
@@ -327,8 +508,108 @@
         updateLancelotImage();
     }
 
-    function getRandomReportLine() {
-        return MEAT_REPORT_LINES[Math.floor(Math.random() * MEAT_REPORT_LINES.length)];
+    function getReportLineForTotal(total) {
+        let selected = MEAT_REPORT_LINES[0];
+        for (const line of MEAT_REPORT_LINES) {
+            if (total >= line.min) selected = line;
+            else break;
+        }
+        return selected;
+    }
+
+    function hexToRgb(hex) {
+        const value = hex.replace('#', '');
+        return {
+            r: parseInt(value.slice(0, 2), 16),
+            g: parseInt(value.slice(2, 4), 16),
+            b: parseInt(value.slice(4, 6), 16)
+        };
+    }
+
+    function mixColor(a, b, t) {
+        const ca = hexToRgb(a);
+        const cb = hexToRgb(b);
+        const lerp = (x, y) => Math.round(x + (y - x) * t);
+        return `rgb(${lerp(ca.r, cb.r)}, ${lerp(ca.g, cb.g)}, ${lerp(ca.b, cb.b)})`;
+    }
+
+    function getMeatThemeColor(total) {
+        const stops = [
+            { value: 0,     color: '#ffe4eb' },
+            { value: 3000,  color: '#ffdde5' },
+            { value: 6000,  color: '#ffd6dc' },
+            { value: 9000,  color: '#facfc8' },
+            { value: 12000, color: '#f5c5b1' },
+            { value: 15000, color: '#efbd95' }
+        ];
+
+        const value = Math.max(0, Math.min(MEAT_MAX_TOTAL, total));
+        for (let i = 0; i < stops.length - 1; i++) {
+            const current = stops[i];
+            const next = stops[i + 1];
+            if (value <= next.value) {
+                const t = (value - current.value) / (next.value - current.value);
+                return mixColor(current.color, next.color, t);
+            }
+        }
+        return stops[stops.length - 1].color;
+    }
+
+    function updateMeatThemeColor() {
+        document.body.style.setProperty('--meat-bg', getMeatThemeColor(state.meatTotal));
+    }
+
+    function getCurrentFindDefinition() {
+        return MEAT_FIND_ITEMS.find(item => item.key === state.meatCurrentFind) || null;
+    }
+
+    function getUnfoundMeatItems() {
+        return MEAT_FIND_ITEMS.filter(item => !state.meatCollection[item.key]);
+    }
+
+    function maybeSpawnMeatFind() {
+        if (state.meatCurrentFind || state.meatTotal < 800) return false;
+
+        const remaining = getUnfoundMeatItems();
+        if (remaining.length === 0) return false;
+
+        state.meatFindReportCounter++;
+        if (state.meatFindReportCounter < MEAT_FIND_REPORT_INTERVAL) return false;
+
+        state.meatFindReportCounter = 0;
+        state.meatCurrentFind = remaining[0].key;
+        return true;
+    }
+
+    function collectCurrentMeatFind() {
+        const item = getCurrentFindDefinition();
+        if (!item) return;
+
+        state.meatCollection[item.key] = true;
+        state.meatCurrentFind = '';
+        state.lastMeatReaction = { img: item.img, msg: item.msg };
+
+        saveGame();
+        renderMeatPanel();
+        setMeatLancelotMessage(item.msg, item.img);
+    }
+
+    function renderMeatFindCollection() {
+        const foundCount = MEAT_FIND_ITEMS.filter(item => !!state.meatCollection[item.key]).length;
+        const cells = MEAT_FIND_ITEMS.map(item => {
+            const found = !!state.meatCollection[item.key];
+            return `<div class="meat-find-cell${found ? '' : ' locked'}" title="${found ? escapeHtml(item.name) : '？？？'}">${found ? item.emoji : '？'}</div>`;
+        }).join('');
+
+        return `
+            <div class="meat-rally-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong style="font-size:12px; color:#8e2d41;">みつけもの</strong>
+                    <span style="font-size:10px; color:#8e2d41; font-weight:bold;">${foundCount} / ${MEAT_FIND_ITEMS.length}</span>
+                </div>
+                <div class="meat-find-grid">${cells}</div>
+            </div>
+        `;
     }
 
     function getProgressTotal() {
@@ -515,32 +796,97 @@
         return { ctx, width, height };
     }
 
-    function getMeatPiecePosition(index, totalCount, width, height) {
-        const columns = Math.max(6, Math.floor(width / (MEAT_PILE_FONT_SIZE * 0.78)));
-        const rows = Math.max(1, Math.ceil(totalCount / columns));
-        const rowStep = Math.max(9, Math.min(MEAT_PILE_FONT_SIZE * 0.62, (height - 30) / Math.max(1, rows)));
-        const colWidth = width / columns;
-        const row = Math.floor(index / columns);
-        const col = index % columns;
-
-        const jitterX = (meatHash(index * 3 + 1) - 0.5) * colWidth * 0.58;
-        const jitterY = (meatHash(index * 7 + 2) - 0.5) * 7;
-
-        return {
-            x: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(width - MEAT_PILE_FONT_SIZE / 2, (col + 0.5) * colWidth + jitterX)),
-            y: Math.max(MEAT_PILE_FONT_SIZE / 2, height - 12 - row * rowStep + jitterY)
-        };
+    function getMeatPileStage(total) {
+        if (total < 3000) return { width: 0.68, height: 0.20 };
+        if (total < 6000) return { width: 0.78, height: 0.30 };
+        if (total < 9000) return { width: 0.86, height: 0.40 };
+        if (total < 12000) return { width: 0.93, height: 0.50 };
+        if (total < 15000) return { width: 0.98, height: 0.60 };
+        return { width: 1.00, height: 0.70 };
     }
 
-    function drawMeatPileBase(ctx, count, totalCount, width, height) {
+    function buildMeatPilePositions(totalCount, width, height) {
+        if (totalCount <= 0) return [];
+
+        const stage = getMeatPileStage(state.meatTotal);
+        const pileWidth = width * stage.width;
+        const baseColumns = Math.max(5, Math.floor(pileWidth / (MEAT_PILE_FONT_SIZE * 0.58)));
+        const rows = [];
+        let remaining = totalCount;
+        let row = 0;
+
+        while (remaining > 0) {
+            const capacity = Math.max(4, baseColumns - Math.floor(row * 0.7));
+            const take = Math.min(capacity, remaining);
+            rows.push(take);
+            remaining -= take;
+            row++;
+        }
+
+        const pileHeight = Math.max(MEAT_PILE_FONT_SIZE, height * stage.height);
+        const rowStep = rows.length <= 1
+            ? 0
+            : Math.min(MEAT_PILE_FONT_SIZE * 0.56, pileHeight / (rows.length - 1));
+
+        const positions = [];
+        let index = 0;
+
+        rows.forEach((count, rowIndex) => {
+            const rowWidth = Math.min(pileWidth, count * MEAT_PILE_FONT_SIZE * 0.62);
+            const colStep = count <= 1 ? 0 : rowWidth / (count - 1);
+            const startX = width / 2 - rowWidth / 2;
+            const baseY = height - 10 - rowIndex * rowStep;
+
+            for (let col = 0; col < count; col++) {
+                const jitterX = (meatHash(index * 3 + 1) - 0.5) * MEAT_PILE_FONT_SIZE * 0.30;
+                const jitterY = (meatHash(index * 7 + 2) - 0.5) * MEAT_PILE_FONT_SIZE * 0.16;
+                const x = count <= 1 ? width / 2 : startX + col * colStep;
+                positions.push({
+                    x: Math.max(MEAT_PILE_FONT_SIZE / 2, Math.min(width - MEAT_PILE_FONT_SIZE / 2, x + jitterX)),
+                    y: Math.max(MEAT_PILE_FONT_SIZE / 2, baseY + jitterY)
+                });
+                index++;
+            }
+        });
+
+        return positions;
+    }
+
+    function getCurrentFindPosition(positions) {
+        const item = getCurrentFindDefinition();
+        if (!item || positions.length === 0) return null;
+
+        const itemIndex = MEAT_FIND_ITEMS.findIndex(candidate => candidate.key === item.key);
+        const ratios = [0.72, 0.43, 0.81, 0.58, 0.66, 0.35];
+        const ratio = ratios[itemIndex] ?? 0.5;
+        const index = Math.max(0, Math.min(positions.length - 1, Math.floor((positions.length - 1) * ratio)));
+
+        return { item, index, ...positions[index] };
+    }
+
+    function drawMeatPileBase(ctx, count, positions, width, height) {
         ctx.clearRect(0, 0, width, height);
         ctx.font = `${MEAT_PILE_FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
+        const find = getCurrentFindPosition(positions);
+        meatFindHitbox = null;
+
         for (let i = 0; i < count; i++) {
-            const pos = getMeatPiecePosition(i, totalCount, width, height);
-            ctx.fillText('🍖', pos.x, pos.y);
+            if (find && i === find.index) continue;
+            const pos = positions[i];
+            if (pos) ctx.fillText('🍖', pos.x, pos.y);
+        }
+
+        if (find && find.index < count) {
+            ctx.font = `${Math.round(MEAT_PILE_FONT_SIZE * 1.12)}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+            ctx.fillText(find.item.emoji, find.x, find.y);
+            meatFindHitbox = {
+                x: find.x,
+                y: find.y,
+                radius: MEAT_PILE_FONT_SIZE * 0.72
+            };
         }
     }
 
@@ -555,16 +901,18 @@
 
         const totalCount = getMeatPieceCount();
         const { ctx, width, height } = setupMeatPileCanvas(canvas);
+        const positions = buildMeatPilePositions(totalCount, width, height);
 
         if (totalCount <= 0) {
             ctx.clearRect(0, 0, width, height);
+            meatFindHitbox = null;
             return;
         }
 
         const animateCount = Math.max(0, Math.min(newPieceCount, MEAT_PILE_ANIMATION_MAX, totalCount));
 
         if (animateCount === 0) {
-            drawMeatPileBase(ctx, totalCount, totalCount, width, height);
+            drawMeatPileBase(ctx, totalCount, positions, width, height);
             return;
         }
 
@@ -572,7 +920,7 @@
         const startTime = performance.now();
 
         const animate = now => {
-            drawMeatPileBase(ctx, staticCount, totalCount, width, height);
+            drawMeatPileBase(ctx, staticCount, positions, width, height);
 
             ctx.font = `${MEAT_PILE_FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
             ctx.textAlign = 'center';
@@ -582,7 +930,9 @@
 
             for (let j = 0; j < animateCount; j++) {
                 const index = staticCount + j;
-                const target = getMeatPiecePosition(index, totalCount, width, height);
+                const target = positions[index];
+                if (!target) continue;
+
                 const delay = (j % 20) * 18;
                 const duration = 550 + meatHash(index + 101) * 450;
                 const raw = (now - startTime - delay) / duration;
@@ -592,8 +942,8 @@
                 if (raw < 0) continue;
 
                 const eased = 1 - Math.pow(1 - progress, 3);
-                const startX = target.x + (meatHash(index + 211) - 0.5) * 60;
-                const startY = -18 - meatHash(index + 307) * 70;
+                const startX = target.x + (meatHash(index + 211) - 0.5) * 80;
+                const startY = -28 - meatHash(index + 307) * 90;
                 const x = startX + (target.x - startX) * eased;
                 const y = startY + (target.y - startY) * eased;
 
@@ -601,7 +951,7 @@
             }
 
             if (finished) {
-                drawMeatPileBase(ctx, totalCount, totalCount, width, height);
+                drawMeatPileBase(ctx, totalCount, positions, width, height);
                 meatPileAnimationFrame = null;
             } else {
                 meatPileAnimationFrame = requestAnimationFrame(animate);
@@ -609,6 +959,84 @@
         };
 
         meatPileAnimationFrame = requestAnimationFrame(animate);
+    }
+
+    function handleMeatPileClick(event) {
+        if (!meatFindHitbox) return;
+        if (event.target instanceof Element && event.target.closest('button, input')) return;
+
+        const canvas = document.getElementById('meat-pile-canvas');
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const dx = x - meatFindHitbox.x;
+        const dy = y - meatFindHitbox.y;
+
+        if (Math.sqrt(dx * dx + dy * dy) <= meatFindHitbox.radius) {
+            collectCurrentMeatFind();
+        }
+    }
+
+    function playMeatCompleteCelebration() {
+        const existing = document.querySelector('.meat-complete-overlay');
+        if (existing) existing.remove();
+
+        const gc = document.getElementById('game-container');
+        if (gc) {
+            gc.classList.remove('meat-complete-burst');
+            void gc.offsetWidth;
+            gc.classList.add('meat-complete-burst');
+        }
+
+        const stampCells = Array.from(document.querySelectorAll('.meat-stamp-cell'));
+        stampCells.forEach((cell, index) => {
+            cell.classList.remove('meat-complete-pulse');
+            cell.style.animationDelay = `${index * 85}ms`;
+            void cell.offsetWidth;
+            cell.classList.add('meat-complete-pulse');
+        });
+
+        const overlay = document.createElement('div');
+        overlay.className = 'meat-complete-overlay';
+
+        const title = document.createElement('div');
+        title.className = 'meat-complete-title';
+        title.innerHTML = `
+            <span class="big">15,000</span>
+            <span class="small">MEAT STAMP RALLY COMPLETE!</span>
+        `;
+        overlay.appendChild(title);
+
+        const dropCount = 54;
+        for (let i = 0; i < dropCount; i++) {
+            const drop = document.createElement('span');
+            drop.className = 'meat-complete-drop';
+            drop.textContent = '🍖';
+
+            const left = 2 + ((i * 37) % 96);
+            const delay = ((i * 7) % 22) * 0.055;
+            const duration = 1.55 + ((i * 11) % 9) * 0.11;
+            const size = 34 + ((i * 13) % 24);
+
+            drop.style.left = `${left}%`;
+            drop.style.animationDelay = `${delay}s`;
+            drop.style.animationDuration = `${duration}s`;
+            drop.style.fontSize = `${size}px`;
+            overlay.appendChild(drop);
+        }
+
+        document.body.appendChild(overlay);
+
+        setTimeout(() => {
+            overlay.remove();
+            stampCells.forEach(cell => {
+                cell.classList.remove('meat-complete-pulse');
+                cell.style.animationDelay = '';
+            });
+            if (gc) gc.classList.remove('meat-complete-burst');
+        }, 3900);
     }
 
     function renderStampRally() {
@@ -831,6 +1259,8 @@
                     <div class="meat-stamp-grid">${renderStampRally()}</div>
                 </div>
 
+                ${renderMeatFindCollection()}
+
                 ${resultHtml}
 
                 <div class="meat-rally-card">
@@ -840,7 +1270,12 @@
                 </div>
             </div>`;
 
+        updateMeatThemeColor();
         updateMeatCooldownUI();
+
+        const root = panel.querySelector('.meat-mode-root');
+        if (root) root.addEventListener('click', handleMeatPileClick);
+
         requestAnimationFrame(() => renderMeatPile(newPilePieces));
     }
 
@@ -898,6 +1333,17 @@
         state.meatLastReportTime = Date.now();
 
         const queuedResult = queueReachedRewards(true);
+        maybeSpawnMeatFind();
+
+        const shouldCelebrateComplete =
+            previousTotal < MEAT_MAX_TOTAL &&
+            state.meatTotal >= MEAT_MAX_TOTAL &&
+            !state.meatCompleteCelebrated;
+
+        if (shouldCelebrateComplete) {
+            state.meatCompleteCelebrated = true;
+        }
+
         const currentPieceCount = getMeatPieceCount();
         const newPilePieces = Math.max(0, currentPieceCount - previousPieceCount);
 
@@ -917,7 +1363,7 @@
         const input = document.getElementById('input-meat');
         if (input) input.value = '';
 
-        const reaction = getRandomReportLine();
+        const reaction = getReportLineForTotal(state.meatTotal);
         state.lastMeatReaction = {
             img: reaction.img,
             msg: reaction.msg
@@ -926,6 +1372,11 @@
         updateUI();
         saveGame();
         renderMeatPanel(resultLines.length > 0 ? { lines: resultLines } : null, newPilePieces);
+
+        if (shouldCelebrateComplete) {
+            requestAnimationFrame(() => playMeatCompleteCelebration());
+        }
+
         startMeatCooldownTimer();
         setMeatLancelotMessage(reaction.msg, reaction.img);
     }
@@ -944,6 +1395,11 @@
         const inputVal = Number(inputValStr);
         if (!Number.isSafeInteger(inputVal) || inputVal < 0) {
             setMeatLancelotMessage('団長、その報告はうまく読めないぞ。正しい肉の個数を入力してくれ。', 'lancelot_1.png');
+            return;
+        }
+
+        if (inputVal >= MEAT_RECORD_LIMIT) {
+            setMeatLancelotMessage('団長、その肉数はさすがに多すぎるぞ……！ 記録できるのは199,999個までだ。', 'lancelot_4.png');
             return;
         }
 
@@ -995,6 +1451,11 @@
             return;
         }
 
+        if (inputVal >= MEAT_RECORD_LIMIT) {
+            setMeatLancelotMessage('肉数修正でも199,999個までだ。200,000個以上は記録できないぞ。', 'lancelot_4.png');
+            return;
+        }
+
         const oldTotal = state.meatTotal;
         state.meatTotal = inputVal;
         state.highestMeatTotal = Math.max(state.highestMeatTotal, inputVal);
@@ -1013,10 +1474,11 @@
     }
 
     function initMeatMode() {
-        ensureMeatState();
+        const sanitized = ensureMeatState();
         ensureMeatThemeStyle();
 
-        if (syncExistingRewardState()) {
+        const rewardStateChanged = syncExistingRewardState();
+        if (sanitized || rewardStateChanged) {
             saveGame();
         }
 
