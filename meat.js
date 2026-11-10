@@ -23,19 +23,19 @@
     ];
 
     const MEAT_REPORT_LINES = [
-        { min: 0,     img: 'lancelot_1.png', msg: '肉集めお疲れさま、団長。着実に増えているな。' },
-        { min: 800,   img: 'lancelot_1.png', msg: '報告ありがとう。次も無理のない範囲で頑張ろう。' },
-        { min: 1600,  img: 'lancelot_5.png', msg: 'それにしても、これだけの肉をどこに置いているんだ……？' },
+        { min: 0,     img: 'lancelot_1.png', msg: '肉集めお疲れさま、団長。着実に増えているな。古戦場の滑り出しは順調だろうか。' },
+        { min: 800,   img: 'lancelot_1.png', msg: 'こんなにいっぱいあったら、少しビストロフェードラッヘにおすそ分けしても……冗談だよ。' },
+        { min: 1600,  img: 'lancelot_5.png', msg: 'それにしても、これだけの肉をどこに置いているんだ……？艇にはまだ俺の知らない空間がありそうだな。' },
         { min: 2400,  img: 'lancelot_6.png', msg: 'ヴェインなら美味しく調理してくれそうだと思わないか？頼んでみるか……' },
-        { min: 3200,  img: 'lancelot_1.png', msg: '少しずつスタンプが埋まってきたな。本戦への準備もばっちりだろうか？' },
+        { min: 3200,  img: 'lancelot_1.png', msg: '古戦場の勲章は、いったい誰が授けてくれているんだろうな？古戦場は謎だらけだ。' },
         { min: 4000,  img: 'lancelot_3.png', msg: 'パーシヴァルに頼んだら全部焼いてくれるかな。ふふっ、バーベキューみたいだ。' },
         { min: 4800,  img: 'lancelot_5.png', msg: '肉の数を数えるのもなかなか大変そうだな。そもそも誰が捌いているんだ……？' },
-        { min: 5600,  img: 'lancelot_1.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。' },
+        { min: 5600,  img: 'lancelot_1.png', msg: '団長は肉集めが好きなのか？……いや、仕事だからやっているんだよな。すまない。' },
         { min: 6400,  img: 'lancelot_3.png', msg: 'これだけ集めれば、戦いの準備もかなり進んだんじゃないか？本戦が楽しみだな！' },
         { min: 7200,  img: 'lancelot_6.png', msg: 'ジークフリートさん、そんな大きなお肉をひと口で！俺も見習います！' },
         { min: 8000,  img: 'lancelot_8.png', msg: '肉、肉、肉……見ているだけで少し腹が減ってきたな。' },
         { min: 8800,  img: 'lancelot_1.png', msg: '俺は甘いものが大好きだが、肉も大好物だ。もっとも、魔物の肉はそんなに食べないが……' },
-        { min: 9600,  img: 'lancelot_4.png', msg: 'かなり集めたな……。無理をしていないか？今回はどれだけ走るつもりなんだ？' },
+        { min: 9600,  img: 'lancelot_4.png', msg: 'かなり集めたな……。今回はどれだけ古戦場を走るつもりなんだ？俺も付き合うぞ！' },
         { min: 10400, img: 'lancelot_6.png', msg: 'さすがだな、団長！この調子なら最後のスタンプまで届きそうだな！' },
         { min: 11200, img: 'lancelot_1.png', msg: '肉は多くても少なくても悲しくなるよな。計画が大変だ。いつもお疲れ様！' },
         { min: 12000, img: 'lancelot_5.png', msg: '食べきれなかった肉はどこへ行っているのだろうか。冷凍して保存しておきたいものだが……' },
@@ -44,16 +44,16 @@
         { min: 14400, img: 'lancelot_3.png', msg: '団長、休憩の予定はないか？お茶をするなら、ぜひ俺も呼んでくれると嬉しいぞ！' },
         { min: 15000, img: 'lancelot_1.png', msg: '本戦の準備はばっちりだな、団長。日頃の鍛錬の成果を見せる時だ。' },
         { min: 20000, img: 'lancelot_6.png', msg: '20,000個……！スタンプラリーは終わったのに、まだこんなに集めているのか。団長の本気には驚かされるな！' },
-        { min: 30000, img: 'lancelot_4.png', msg: '30,000個！？団長、さすがにこれは肉の山というより山脈だぞ……！本戦前に埋もれないでくれよ。' }
+        { min: 30000, img: 'lancelot_4.png', msg: '30,000個！？団長、これはもう肉の山というより山脈だな……！本戦前に埋もれないでくれよ。' }
     ];
 
     const MEAT_FIND_ITEMS = [
-        { key: 'pudding',    emoji: '🍮', name: 'プリン',   img: 'lancelot_6.png', msg: 'プリン！どうして肉の中に……？団長、これは俺が預かってもいいだろうか。' },
-        { key: 'crab',       emoji: '🦀', name: 'カニ',     img: 'lancelot_5.png', msg: 'カニ！？肉を集めていたはずなんだが……どこから紛れ込んだんだ？' },
-        { key: 'strawberry', emoji: '🍓', name: 'イチゴ',   img: 'lancelot_3.png', msg: 'イチゴだ！肉ばかり見ていたから、少し甘いものが嬉しいな。' },
-        { key: 'sword',      emoji: '⚔️', name: '剣',       img: 'lancelot_6.png', msg: '剣まで出てきたのか！……少し見せてもらってもいいか？' },
-        { key: 'dragon',     emoji: '🐉', name: '竜',       img: 'lancelot_5.png', msg: '竜まで紛れ込んでいるぞ……。ジークフリートさんなら何か知っているかもしれないな。' },
-        { key: 'snow',       emoji: '❄️', name: '雪の結晶', img: 'lancelot_1.png', msg: '雪の結晶か。肉の山の中にあると、なんだか不思議な眺めだな。' }
+        { key: 'pudding',    emoji: '🍮', name: 'プリン',   img: 'lancelot_6.png', msg: 'これはヴェイン特製のプリン！どうして肉の中に……？団長、これは俺が預かってもいいだろうか。' },
+        { key: 'crab',       emoji: '🦀', name: 'カニ',     img: 'lancelot_4.png', msg: '団長、カニだぞ！どこから紛れ込んだんだ？……なぜかカニを見かけると嬉しくなるな……' },
+        { key: 'strawberry', emoji: '🍓', name: 'イチゴ',   img: 'lancelot_3.png', msg: 'イチゴだ！パーシヴァルに持って行ったら喜ぶかな？それとも俺がつまみ食いしてしまおうか。' },
+        { key: 'sword',      emoji: '⚔️', name: '剣',       img: 'lancelot_6.png', msg: '団長、手合わせに付き合ってくれるのか！嬉しいぞ、古戦場が終わったらじっくりやろう。' },
+        { key: 'dragon',     emoji: '🐉', name: '竜',       img: 'lancelot_5.png', msg: 'ドラゴンが紛れ込んでいるぞ……。ジークフリートさんなら何か知っているかもしれないな。' },
+        { key: 'snow',       emoji: '❄️', name: '雪の結晶', img: 'lancelot_3.png', msg: 'ふふっ、それは俺のいたずらだ。雪の結晶だぞ！……びっくりしたか？' }
     ];
 
     function ensureMeatState() {
@@ -1210,7 +1210,7 @@
                         <span class="val">${state.meatTotal.toLocaleString()}個</span>
                     </div>
                     <div class="status-card">
-                        <span class="label">📣 肉集め報告</span>
+                        <span class="label">📣 肉集め報告回数</span>
                         <span class="val">${state.meatReportCount}回</span>
                     </div>
                     <div class="status-card">
@@ -1235,8 +1235,8 @@
                 <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:end; gap:10px;">
                         <div>
-                            <div style="font-size:13px; font-weight:bold; color:#8e2d41;">肉スタンプラリー</div>
-                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${stampCount >= 15 ? '全15スタンプ達成！' : `次のスタンプまであと ${nextStamp.toLocaleString()}個`}</div>
+                            <div style="font-size:13px; font-weight:bold; color:#8e2d41;">肉集めスタンプラリー</div>
+                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${stampCount >= 15 ? '全スタンプコンプリート！' : `次のスタンプまであと ${nextStamp.toLocaleString()}個`}</div>
                         </div>
                         <div style="font-size:13px; font-weight:bold; color:#8e2d41; white-space:nowrap;">${progressTotal.toLocaleString()} / ${MEAT_MAX_TOTAL.toLocaleString()}</div>
                     </div>
@@ -1468,7 +1468,7 @@
 
         let message = `肉数を ${oldTotal.toLocaleString()}個から ${inputVal.toLocaleString()}個に修正したぞ。`;
         if (canceled) {
-            message += ' 条件を下回った未受取の報酬は取り消しておいた。';
+            message += ' 条件を下回った報酬は取り消しておいた。';
         }
         setMeatLancelotMessage(message, inputVal < oldTotal ? 'lancelot_5.png' : 'lancelot_1.png');
     }
