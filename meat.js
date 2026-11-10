@@ -1,4 +1,3 @@
-
 (() => {
     const MEAT_MAX_TOTAL = 15000;
     const MEAT_RECORD_LIMIT = 200000; 
@@ -1085,7 +1084,7 @@
                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                     >
                     <span class="meat-stamp-fallback">${fallback}</span>
-                    <span style="font-size:10px;">${amount / 1000}k</span>
+                    <span style="font-size:10px;">${amount.toLocaleString()}</span>
                     ${rewardPending ? '<span style="font-size:8px; color:#9a5b0a;">次回解放</span>' : ''}
                 </div>
             `);
@@ -1227,14 +1226,6 @@
 
         const stampCount = getStampCount();
 
-        let resultHtml = '';
-        if (result && result.lines && result.lines.length > 0) {
-            resultHtml = `
-                <div class="meat-rally-card" style="font-size:13px; line-height:1.7; border-color:#e5a8b5;">
-                    ${result.lines.map(line => `<div>${escapeHtml(line)}</div>`).join('')}
-                </div>`;
-        }
-
         panel.innerHTML = `
             <div class="meat-mode-root" style="width:100%;">
                 <div class="meat-mode-foreground">
@@ -1271,7 +1262,6 @@
 
                 <div id="meat-cooldown-text" style="color:#c0392b; font-size:13px; font-weight:bold; min-height:20px; display:flex; align-items:center;"></div>
 
-
                 <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
                         <strong style="font-size:13px; color:#8e2d41;">スタンプラリー</strong>
@@ -1281,8 +1271,6 @@
                 </div>
 
                 ${renderMeatFindCollection()}
-
-                ${resultHtml}
 
                 ${renderMeatRewardOrPileCard()}
                 </div>
