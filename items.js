@@ -54,8 +54,7 @@ const ITEM_DB = {
         { id: 'clothes52', name: 'ぐんぷく（白）', file: 'clothes_52.png', type: 'setup' },
         { id: 'clothes53', name: 'ぐんぷく（黒）', file: 'clothes_53.png', type: 'setup' },
         { id: 'clothes54', name: 'シェフのふく', file: 'clothes_54.png', type: 'setup' },
- 
-        { id: 'meat12000', name: '肉集め名人', file: 'meat_12000.png', type: 'setup', meatRewardOnly: true },
+
    ],
     tops: [
         { id: 'tops1', name: '絶対甘党', file: 'tops_1.png', type: 'tops' },
@@ -418,7 +417,9 @@ const ITEM_DB = {
         
         { id: 'meat3000', name: '勲章', file: 'meat_3000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
         { id: 'meat6000', name: 'マウスカーソル', file: 'meat_6000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
-        { id: 'meat9000', name: '山盛りの肉', file: 'meat_9000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
+        { id: 'meat12000', name: '肉集め名人', file: 'meat_12000.png', type: 'acc',accGroup: 'other', meatRewardOnly: true },
+        { id: 'meat15000', name: '認証画面', file: 'meat_15000.png', type: 'acc', accGroup: 'other',meatRewardOnly: true },
+    
     ],
     bg: [
         { id: 'bg1', name: 'ブルー', file: 'bg_1.png', type: 'bg' },
@@ -517,6 +518,6 @@ const ITEM_DB = {
         { id: 'bg94', name: 'でかいおれとおれ', file: 'bg_94.png', type: 'bg' },
         { id: 'bg95', name: 'クロウィン', file: 'bg_95.png', type: 'bg' },
         { id: 'bg96', name: 'カニ', file: 'bg_96.png', type: 'bg' },
-        { id: 'meat15000', name: '認証画面', file: 'meat_15000.png', type: 'bg', meatRewardOnly: true },
+        { id: 'meat9000', name: '山盛りの肉', file: 'meat_9000.png', type: 'bg', accGroup: 'other', meatRewardOnly: true },
     ]
 };
