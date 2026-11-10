@@ -330,11 +330,17 @@
             content: '';
             position: absolute;
             top: -10px;
-            left: 16.66%; 
+            left: var(--sub-tab-arrow-left, 16.66%);
             transform: translateX(-50%);
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
             border-bottom: 8px solid var(--accent);
+        }
+        #room-sub-tabs, #shop-sub-tabs {
+            --sub-tab-arrow-left: 16.66%;
+        }
+        #room-acc-tabs, #shop-acc-tabs {
+            --sub-tab-arrow-left: 50%;
         }
         .sub-cat-tab-item {
             flex: 1;
@@ -854,19 +860,32 @@
                         <div class="sub-cat-tab-item" id="acc-other-room" onclick="changeRoomAccTab('other')">その他</div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px; margin-bottom: 10px;">
-                        <p style="font-size: 12px; color: #666; margin: 0;">※着用中のアイテムを再度押すと外せます</p>
-                        <button onclick="randomEquip()" style="
-                            font-size: 11px;
-                            padding: 5px 8px;
-                            background-color: #64748b;
-                            border-radius: 6px;
-                            box-shadow: none;
-                            margin: 0;
-                            white-space: nowrap;
-                        ">
-                            🎲 おまかせ
-                        </button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px; margin-bottom: 10px; gap: 8px;">
+                        <p style="font-size: 12px; color: #666; margin: 0; flex: 1;">※着用中のアイテムを再度押すと外せます</p>
+                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <button onclick="randomEquip()" style="
+                                font-size: 11px;
+                                padding: 5px 8px;
+                                background-color: #64748b;
+                                border-radius: 6px;
+                                box-shadow: none;
+                                margin: 0;
+                                white-space: nowrap;
+                            ">
+                                🎲 おまかせ
+                            </button>
+                            <button onclick="clearAllEquip()" style="
+                                font-size: 11px;
+                                padding: 5px 8px;
+                                background-color: #e67e22;
+                                border-radius: 6px;
+                                box-shadow: none;
+                                margin: 0;
+                                white-space: nowrap;
+                            ">
+                                全消去
+                            </button>
+                        </div>
                     </div>
                     <div id="unlocked-list"></div>
                 </div>
@@ -1777,6 +1796,19 @@
         applyAvatarImageAll();
         renderRoomItems();
         saveGame(); 
+    }
+
+    function clearAllEquip() {
+        currentEquip = { ...defaultEquip, acc: [] };
+        equipOrder = [];
+
+        applyAvatarImageAll();
+        renderRoomItems();
+        saveGame();
+
+        setDefaultLancelotImg();
+        setLancelotMessage("着せ替えを全部外したぞ。");
+        updateUI();
     }
 
     function randomEquip() {
