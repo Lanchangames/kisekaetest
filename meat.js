@@ -353,6 +353,20 @@
                 background: rgba(255,255,255,.9);
                 border: 1px solid rgba(0,0,0,.07);
                 overflow: hidden;
+                padding: 0;
+                color: inherit;
+                box-shadow: none;
+                cursor: pointer;
+                appearance: none;
+                -webkit-appearance: none;
+            }
+            .meat-reward-icon:hover {
+                background: #fff6dc;
+                border-color: #e8a9b7;
+                transform: none;
+            }
+            .meat-reward-icon:active {
+                transform: scale(.96);
             }
             .meat-reward-icon img {
                 width: 100%;
@@ -909,14 +923,20 @@
 
     function renderRewardIcon(reward) {
         return `
-            <div class="meat-reward-icon">
+            <button
+                type="button"
+                class="meat-reward-icon meat-reward-preview-trigger"
+                data-meat-reward-amount="${reward.amount}"
+                aria-label="${escapeHtml(reward.name)}の報酬を確認"
+                title="報酬を見る"
+            >
                 <img
                     src="${escapeHtml(typeof getItemImagePath === 'function' ? getItemImagePath(reward.file) : reward.file)}"
                     alt="${escapeHtml(reward.name)}"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
                 >
                 <span class="meat-reward-icon-fallback" style="display:none;">🎁</span>
-            </div>
+            </button>
         `;
     }
 
@@ -1218,16 +1238,35 @@
                 <div class="meat-reward-preview-name">${escapeHtml(reward.name)}</div>
                 <div class="meat-reward-preview-meta">${escapeHtml(getRewardTypeLabel(reward.type))}</div>
                 <div class="meat-reward-preview-status">${escapeHtml(status)}</div>
-                <button type="button" class="meat-reward-preview-close" onclick="hideMeatRewardPreview()">閉じる</button>
+                <button type="button" class="meat-reward-preview-close" data-meat-reward-preview-close>閉じる</button>
             </div>
         `;
 
         document.body.appendChild(overlay);
+
+        const closeButton = overlay.querySelector('[data-meat-reward-preview-close]');
+        if (closeButton) {
+            closeButton.addEventListener('click', hideMeatRewardPreview);
+        }
     }
 
     function hideMeatRewardPreview() {
         const overlay = document.getElementById('meat-reward-preview-overlay');
         if (overlay) overlay.remove();
+    }
+
+    function handleMeatRewardPreviewClick(event) {
+        if (!(event.target instanceof Element)) return;
+
+        const trigger = event.target.closest('[data-meat-reward-amount]');
+        if (!trigger) return;
+
+        const amount = Number(trigger.getAttribute('data-meat-reward-amount'));
+        if (!Number.isSafeInteger(amount)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        showMeatRewardPreview(amount);
     }
 
     function renderStampRally() {
@@ -1253,7 +1292,7 @@
             cells.push(`
                 <div class="meat-stamp-cell ${cls}${rewardPoint ? ' reward-point' : ''}" title="${amount.toLocaleString()}個${reward ? `：${escapeHtml(reward.name)}` : ''}">
                     ${isNext && !rewardPending ? '<span class="meat-stamp-next-tag">NEXT</span>' : ''}
-                    ${reward ? `<button class="meat-stamp-gift-button" type="button" aria-label="${escapeHtml(reward.name)}の報酬を確認" title="報酬を見る" onclick="event.stopPropagation(); showMeatRewardPreview(${reward.amount})">🎁</button>` : ''}
+                    ${reward ? `<button class="meat-stamp-gift-button meat-reward-preview-trigger" type="button" data-meat-reward-amount="${reward.amount}" aria-label="${escapeHtml(reward.name)}の報酬を確認" title="報酬を見る">🎁</button>` : ''}
                     <img
                         class="meat-stamp-image"
                         src="${typeof getItemImagePath === 'function' ? getItemImagePath(MEAT_STAMP_IMAGE) : MEAT_STAMP_IMAGE}"
@@ -1458,7 +1497,10 @@
         updateMeatCooldownUI();
 
         const root = panel.querySelector('.meat-mode-root');
-        if (root) root.addEventListener('click', handleMeatPileClick);
+        if (root) {
+            root.addEventListener('click', handleMeatRewardPreviewClick);
+            root.addEventListener('click', handleMeatPileClick);
+        }
 
         if (meatPanelView === 'pile') {
             requestAnimationFrame(() => renderMeatPile(newPilePieces));
