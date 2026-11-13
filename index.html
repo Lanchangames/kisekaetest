@@ -746,8 +746,19 @@
             border-color: var(--accent);
             box-shadow: 0 5px 14px rgba(52, 152, 219, 0.22);
             transform: scale(1.015);
-            opacity: .96;
+            opacity: .24;
             z-index: 5;
+        }
+
+        .layer-drag-ghost {
+            position: fixed !important;
+            z-index: 30000 !important;
+            margin: 0 !important;
+            pointer-events: none !important;
+            opacity: .96 !important;
+            transform: scale(1.02);
+            border-color: var(--accent) !important;
+            box-shadow: 0 10px 26px rgba(52, 152, 219, 0.28) !important;
         }
 
         .layer-drag-handle {
@@ -1017,7 +1028,7 @@
                 <aside id="layer-manager" aria-label="着用中レイヤー" style="display:none;">
                     <div class="layer-manager-header">
                         <div class="layer-manager-title">↕️ レイヤー順</div>
-                        <p class="layer-manager-help">上ほど手前。つまみをドラッグして並べ替えできます。<br>背景・素体は固定です。</p>
+                        <p class="layer-manager-help">ドラッグして並べ替えできます</p>
                     </div>
                     <div id="layer-sort-list"></div>
                 </aside>
@@ -2016,38 +2027,88 @@
 
         list.querySelectorAll('.layer-drag-handle').forEach(handle => {
             handle.onpointerdown = (event) => {
-                if (event.button !== undefined && event.button !== 0) return;
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
 
                 const dragged = handle.closest('.layer-sort-item');
                 if (!dragged) return;
+                if (list.querySelectorAll('.layer-sort-item').length < 2) return;
 
                 event.preventDefault();
+                event.stopPropagation();
+
+                const pointerId = event.pointerId;
+                const startRect = dragged.getBoundingClientRect();
+                const offsetY = event.clientY - startRect.top;
+
+                const ghost = dragged.cloneNode(true);
+                ghost.classList.remove('dragging');
+                ghost.classList.add('layer-drag-ghost');
+                ghost.style.left = `${startRect.left}px`;
+                ghost.style.top = `${startRect.top}px`;
+                ghost.style.width = `${startRect.width}px`;
+                ghost.style.height = `${startRect.height}px`;
+                document.body.appendChild(ghost);
+
                 dragged.classList.add('dragging');
-                handle.setPointerCapture?.(event.pointerId);
+                dragged.style.pointerEvents = 'none';
+
+                try { handle.setPointerCapture?.(pointerId); } catch (_) {}
+
+                const moveGhost = clientY => {
+                    ghost.style.top = `${clientY - offsetY}px`;
+                };
 
                 const move = (moveEvent) => {
+                    if (moveEvent.pointerId !== pointerId) return;
                     moveEvent.preventDefault();
-                    const hit = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
-                    const target = hit ? hit.closest('.layer-sort-item') : null;
-                    if (!target || target === dragged || target.parentElement !== list) return;
 
-                    const rect = target.getBoundingClientRect();
-                    const before = moveEvent.clientY < rect.top + rect.height / 2;
-                    list.insertBefore(dragged, before ? target : target.nextSibling);
+                    moveGhost(moveEvent.clientY);
+
+                    const listRect = list.getBoundingClientRect();
+                    const scrollZone = 30;
+                    if (moveEvent.clientY < listRect.top + scrollZone) {
+                        list.scrollTop -= 10;
+                    } else if (moveEvent.clientY > listRect.bottom - scrollZone) {
+                        list.scrollTop += 10;
+                    }
+
+                    const rows = Array.from(list.querySelectorAll('.layer-sort-item'))
+                        .filter(row => row !== dragged);
+
+                    let inserted = false;
+                    for (const row of rows) {
+                        const rect = row.getBoundingClientRect();
+                        if (moveEvent.clientY < rect.top + rect.height / 2) {
+                            list.insertBefore(dragged, row);
+                            inserted = true;
+                            break;
+                        }
+                    }
+
+                    if (!inserted) {
+                        list.appendChild(dragged);
+                    }
                 };
 
                 const finish = (upEvent) => {
-                    handle.removeEventListener('pointermove', move);
-                    handle.removeEventListener('pointerup', finish);
-                    handle.removeEventListener('pointercancel', finish);
-                    try { handle.releasePointerCapture?.(upEvent.pointerId); } catch (_) {}
+                    if (upEvent.pointerId !== pointerId) return;
+
+                    document.removeEventListener('pointermove', move, true);
+                    document.removeEventListener('pointerup', finish, true);
+                    document.removeEventListener('pointercancel', finish, true);
+
+                    try { handle.releasePointerCapture?.(pointerId); } catch (_) {}
+
+                    ghost.remove();
                     dragged.classList.remove('dragging');
+                    dragged.style.pointerEvents = '';
+
                     commitLayerOrderFromDom();
                 };
 
-                handle.addEventListener('pointermove', move);
-                handle.addEventListener('pointerup', finish);
-                handle.addEventListener('pointercancel', finish);
+                document.addEventListener('pointermove', move, { capture: true, passive: false });
+                document.addEventListener('pointerup', finish, { capture: true });
+                document.addEventListener('pointercancel', finish, { capture: true });
             };
         });
     }
