@@ -1,3 +1,4 @@
+
 (() => {
     const MEAT_MAX_TOTAL = 15000;
     const MEAT_RECORD_LIMIT = 200000; 
@@ -49,12 +50,12 @@
     ];
 
     const MEAT_FIND_ITEMS = [
-        { key: 'pudding',    emoji: '🍮', name: 'プリン',   img: 'lancelot_6.png', msg: 'これはヴェイン特製のプリン！どうして肉の中に……？団長、これは俺が預かってもいいだろうか。' },
-        { key: 'crab',       emoji: '🦀', name: 'カニ',     img: 'lancelot_4.png', msg: '団長、カニだぞ！どこから紛れ込んだんだ？……なぜかカニを見かけると嬉しくなるな……' },
-        { key: 'strawberry', emoji: '🍓', name: 'イチゴ',   img: 'lancelot_3.png', msg: 'イチゴだ！パーシヴァルに持って行ったら喜ぶかな？それとも俺がつまみ食いしてしまおうか。' },
-        { key: 'sword',      emoji: '⚔️', name: '剣',       img: 'lancelot_6.png', msg: '団長、手合わせに付き合ってくれるのか！嬉しいぞ、古戦場が終わったらじっくりやろう。' },
-        { key: 'dragon',     emoji: '🐉', name: '竜',       img: 'lancelot_5.png', msg: 'ドラゴンが紛れ込んでいるぞ……。ジークフリートさんなら何か知っているかもしれないな。' },
-        { key: 'snow',       emoji: '❄️', name: '雪の結晶', img: 'lancelot_3.png', msg: 'ふふっ、それは俺のいたずらだ。雪の結晶だぞ！……びっくりしたか？' }
+        { key: 'pudding',    emoji: '🍮', name: 'プリン',   img: 'lancelot_6.png', rewardItemId: 'meatFindPudding',    rewardName: 'プリンの髪飾り',       msg: 'これはヴェイン特製のプリン！どうして肉の中に……？団長、これは俺が預かってもいいだろうか。' },
+        { key: 'crab',       emoji: '🦀', name: 'カニ',     img: 'lancelot_4.png', rewardItemId: 'meatFindCrab',       rewardName: 'カニの髪飾り',         msg: '団長、カニだぞ！どこから紛れ込んだんだ？……なぜかカニを見かけると嬉しくなるな……' },
+        { key: 'strawberry', emoji: '🍓', name: 'イチゴ',   img: 'lancelot_3.png', rewardItemId: 'meatFindStrawberry', rewardName: 'イチゴの髪飾り',       msg: 'イチゴだ！パーシヴァルに持って行ったら喜ぶかな？それとも俺がつまみ食いしてしまおうか。' },
+        { key: 'sword',      emoji: '🐶', name: '犬',       img: 'lancelot_6.png', rewardItemId: 'meatFindSword',      rewardName: '双剣の髪飾り',         msg: '団長、犬が紛れ込んでいるぞ！……ふふっ、可愛いな！' },
+        { key: 'dragon',     emoji: '🐉', name: '竜',       img: 'lancelot_5.png', rewardItemId: 'meatFindDragon',     rewardName: 'ドラゴンの髪飾り',     msg: 'ドラゴンが紛れ込んでいるぞ……。ジークフリートさんなら何か知っているかもしれないな。' },
+        { key: 'snow',       emoji: '❄️', name: '雪の結晶', img: 'lancelot_3.png', rewardItemId: 'meatFindSnow',       rewardName: '雪の結晶の髪飾り',     msg: 'ふふっ、それは俺のいたずらだ。雪の結晶だぞ！……びっくりしたか？' }
     ];
 
     function ensureMeatState() {
@@ -590,7 +591,7 @@
     }
 
     function maybeSpawnMeatFind() {
-        if (state.meatCurrentFind || state.meatTotal < 800) return false;
+        if (state.meatTotal < 800) return false;
         if (Math.random() >= MEAT_FIND_CHANCE) return false;
 
         const weighted = MEAT_FIND_ITEMS.map(item => ({
@@ -616,12 +617,47 @@
         const item = getCurrentFindDefinition();
         if (!item) return;
 
+        const firstDiscovery = !state.meatCollection[item.key];
+        let message = item.msg;
+        let unlockedReward = false;
+
         state.meatCollection[item.key] = true;
         state.meatCurrentFind = '';
-        state.lastMeatReaction = { img: item.img, msg: item.msg };
+
+        if (firstDiscovery && item.rewardItemId) {
+            const rewardItem = findItemById(item.rewardItemId);
+
+            if (rewardItem && rewardItem.type === 'acc') {
+                if (!state.unlocked || typeof state.unlocked !== 'object' || Array.isArray(state.unlocked)) {
+                    state.unlocked = {};
+                }
+                state.unlocked[item.rewardItemId] = true;
+                unlockedReward = true;
+                message += ` 「${item.rewardName}」を手に入れたぞ！`;
+            } else {
+                console.warn(`[肉のみつけもの] ${item.rewardItemId} のアクセサリー定義が見つかりません。`);
+            }
+        }
+
+        state.lastMeatReaction = { img: item.img, msg: message };
 
         saveGame();
+        if (unlockedReward && typeof renderItems === 'function') {
+            renderItems();
+        }
         renderMeatPanel();
+        setMeatLancelotMessage(message, item.img);
+    }
+
+    function replayMeatFind(key) {
+        const item = MEAT_FIND_ITEMS.find(candidate => candidate.key === key);
+        if (!item || !state.meatCollection[item.key]) return;
+
+        state.lastMeatReaction = {
+            img: item.img,
+            msg: item.msg
+        };
+
         setMeatLancelotMessage(item.msg, item.img);
     }
 
@@ -629,7 +665,10 @@
         const foundCount = MEAT_FIND_ITEMS.filter(item => !!state.meatCollection[item.key]).length;
         const cells = MEAT_FIND_ITEMS.map(item => {
             const found = !!state.meatCollection[item.key];
-            return `<div class="meat-find-cell${found ? '' : ' locked'}" title="${found ? escapeHtml(item.name) : '？？？'}">${found ? item.emoji : '？'}</div>`;
+            const replayAttrs = found
+                ? ` role="button" tabindex="0" onclick="replayMeatFind('${item.key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();replayMeatFind('${item.key}');}" style="cursor:pointer;"`
+                : '';
+            return `<div class="meat-find-cell${found ? '' : ' locked'}" title="${found ? `${escapeHtml(item.name)}（タップでセリフ再生）` : '？？？'}"${replayAttrs}>${found ? item.emoji : '？'}</div>`;
         }).join('');
 
         return `
@@ -1262,6 +1301,7 @@
 
                 <div id="meat-cooldown-text" style="color:#c0392b; font-size:13px; font-weight:bold; min-height:20px; display:flex; align-items:center;"></div>
 
+
                 <div class="meat-rally-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
                         <strong style="font-size:13px; color:#8e2d41;">スタンプラリー</strong>
@@ -1309,6 +1349,11 @@
             <p>
                 1,000個ごとにスタンプを1個獲得します。<br>
                 スタンプが貯まると着せ替え報酬があります。到達した報酬は次の通常報告で解放されます。
+            </p>
+
+            <h2>肉の数を修正</h2>
+            <p>
+                入力を間違えた場合は「肉の数を修正」を使ってください。
             </p>
 
             <h2>肉の山</h2>
@@ -1555,6 +1600,7 @@
     window.openMeatMode = openMeatMode;
     window.showMeatHelp = showMeatHelp;
     window.hideMeatHelp = hideMeatHelp;
+    window.replayMeatFind = replayMeatFind;
     window.setMeatPanelView = setMeatPanelView;
     window.closeMeatMode = closeMeatMode;
     window.reportMeat = reportMeat;
