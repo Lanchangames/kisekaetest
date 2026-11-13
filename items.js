@@ -412,11 +412,12 @@ const ITEM_DB = {
         { id: 'acc258', name: 'カニ', file: 'acc_258.png', type: 'acc', accGroup: 'hand' },
     　 　{ id: 'acc259', name: 'ロブスター', file: 'acc_259.png', type: 'acc', accGroup: 'hand' },
     　 　{ id: 'acc260', name: '黒マスク', file: 'acc_260.png', type: 'acc', accGroup: 'other' },
-        { id: 'acc261', name: 'ああああ', file: 'acc_261.png', type: 'acc', accGroup: 'head' },
+        { id: 'acc261', name: 'カブトムシ', file: 'acc_261.png', type: 'acc', accGroup: 'hand' },
+        { id: 'acc262', name: 'クロウィンのリボン', file: 'acc_262.png', type: 'acc', accGroup: 'other' },
 
         { id: 'meat3000', name: '勲章', file: 'meat_3000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
         { id: 'meat6000', name: 'マウスカーソル', file: 'meat_6000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
-        { id: 'meat12000', name: '肉集め名人', file: 'meat_12000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
+        { id: 'meat12000', name: '肉集め中', file: 'meat_12000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
         { id: 'meat15000', name: '認証画面', file: 'meat_15000.png', type: 'acc', accGroup: 'other', meatRewardOnly: true },
 
         { id: 'meatFindPudding', name: 'プリンの髪飾り', file: 'acc_meat_pudding.png', type: 'acc', accGroup: 'head', meatRewardOnly: true },
