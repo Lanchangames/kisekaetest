@@ -378,7 +378,7 @@ const ITEM_DB = {
         { id: 'acc224', name: '手裏剣', file: 'acc_224.png', type: 'acc', accGroup: 'hand' },
         { id: 'acc225', name: '恐怖くん', file: 'acc_225.png', type: 'acc', accGroup: 'hand' },
         { id: 'acc226', name: 'かぼちゃのぼうし', file: 'acc_226.png', type: 'acc', accGroup: 'head' },
-        { id: 'acc227', name: 'おばけかぼちゃランタン', file: 'acc_227.png', type: 'acc', accGroup: 'hand' },
+        { id: 'acc227', name: 'おばけかぼちゃランタン', file: 'acc_227.png', type: 'acc', accGroup: 'other' },
         { id: 'acc228', name: 'バスケットボール', file: 'acc_228.png', type: 'acc', accGroup: 'hand' },
         { id: 'acc229', name: 'スポーツバッグ', file: 'acc_229.png', type: 'acc', accGroup: 'other' },
         { id: 'acc230', name: 'こんらんひよこ', file: 'acc_230.png', type: 'acc', accGroup: 'other' },
