@@ -17,11 +17,11 @@
     let meatPanelView = 'rewards';
 
     const MEAT_STAMP_REWARDS = [
-        { amount: 3000,  itemId: 'meat3000',  name: '勲章',           file: 'meat_3000.png',  type: 'acc' },
-        { amount: 6000,  itemId: 'meat6000',  name: 'マウスカーソル', file: 'meat_6000.png',  type: 'acc' },
-        { amount: 9000,  itemId: 'meat9000',  name: '山盛りの肉',     file: 'meat_9000.png',  type: 'bg' },
-        { amount: 12000, itemId: 'meat12000', name: '肉集め中',     file: 'meat_12000.png', type: 'acc' },
-        { amount: 15000, itemId: 'meat15000', name: '認証画面',       file: 'meat_15000.png', type: 'acc' }
+        { amount: 3000,  itemId: 'meat3000',  name: '勲章',           file: 'acc_meat_3000.png',  type: 'acc' },
+        { amount: 6000,  itemId: 'meat6000',  name: 'マウスカーソル', file: 'acc_meat_6000.png',  type: 'acc' },
+        { amount: 9000,  itemId: 'meat9000',  name: '山盛りの肉',     file: 'bg_meat_9000.png',  type: 'bg' },
+        { amount: 12000, itemId: 'meat12000', name: '肉集め中',     file: 'acc_meat_12000.png', type: 'acc' },
+        { amount: 15000, itemId: 'meat15000', name: '認証画面',       file: 'acc_meat_15000.png', type: 'acc' }
     ];
 
     const MEAT_REPORT_LINES = [
