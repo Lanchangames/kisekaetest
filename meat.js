@@ -206,12 +206,92 @@
             .meat-stamp-cell.next { border: 3px solid #c0392b; background: #fff0f2; color: #9f2f29; box-shadow: 0 0 0 3px rgba(192,57,43,.08); }
             .meat-stamp-cell.pending { border: 3px solid #e68a19; background: #fff7e8; color: #9a5b0a; box-shadow: 0 0 0 3px rgba(230,138,25,.10); }
             .meat-stamp-cell.locked { border: 2px solid #d8dee5; background: #f8fafc; color: #94a3b8; }
-            .meat-stamp-cell.reward-point::after {
-                content: '🎁';
+            .meat-stamp-gift-button {
                 position: absolute;
-                top: -7px;
-                right: -5px;
-                font-size: 14px;
+                top: -10px;
+                right: -8px;
+                width: 28px;
+                height: 28px;
+                padding: 0;
+                border: 0;
+                border-radius: 999px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #ffffff;
+                box-shadow: 0 2px 7px rgba(0,0,0,.18);
+                font-size: 15px;
+                line-height: 1;
+                cursor: pointer;
+                z-index: 2;
+            }
+            .meat-stamp-gift-button:hover {
+                background: #fff6dc;
+                transform: scale(1.06);
+            }
+            .meat-stamp-gift-button:active {
+                transform: scale(.94);
+            }
+            .meat-reward-preview-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 21000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                box-sizing: border-box;
+                background: rgba(15, 23, 42, .55);
+            }
+            .meat-reward-preview-card {
+                width: min(360px, 92vw);
+                background: #fff;
+                border-radius: 16px;
+                padding: 20px;
+                box-sizing: border-box;
+                text-align: center;
+                box-shadow: 0 16px 45px rgba(0,0,0,.24);
+            }
+            .meat-reward-preview-title {
+                margin: 0 0 12px;
+                color: #8e2d41;
+                font-size: 17px;
+                font-weight: 900;
+            }
+            .meat-reward-preview-image {
+                width: 150px;
+                height: 150px;
+                object-fit: contain;
+                display: block;
+                margin: 0 auto 12px;
+                border-radius: 12px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+            }
+            .meat-reward-preview-name {
+                font-size: 18px;
+                font-weight: 900;
+                color: #334155;
+                margin-bottom: 5px;
+            }
+            .meat-reward-preview-meta {
+                font-size: 12px;
+                color: #64748b;
+                line-height: 1.7;
+            }
+            .meat-reward-preview-status {
+                margin-top: 10px;
+                padding: 8px 10px;
+                border-radius: 8px;
+                background: #f8fafc;
+                color: #475569;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .meat-reward-preview-close {
+                width: 100%;
+                margin-top: 16px;
+                background: #8e2d41;
             }
             .meat-stamp-image {
                 width: 34px;
@@ -1093,6 +1173,63 @@
         }, 3900);
     }
 
+    function showMeatRewardPreview(amount) {
+        const reward = MEAT_STAMP_REWARDS.find(candidate => candidate.amount === amount);
+        if (!reward) return;
+
+        hideMeatRewardPreview();
+
+        const key = `stamp_${reward.amount}`;
+        const received = !!state.meatRewardReceived[key];
+        const pending = !!state.meatPendingRewards[key] && !received;
+        const definition = getRewardItemDefinitionState(reward);
+
+        let status = '未達成';
+        if (received) {
+            status = '獲得済み';
+        } else if (pending) {
+            status = definition.item && definition.valid
+                ? '次の通常報告で解放'
+                : '報酬定義を確認してください';
+        } else if (state.meatTotal >= reward.amount) {
+            status = '達成済み';
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'meat-reward-preview-overlay';
+        overlay.id = 'meat-reward-preview-overlay';
+        overlay.onclick = event => {
+            if (event.target === overlay) hideMeatRewardPreview();
+        };
+
+        const imagePath = typeof getItemImagePath === 'function'
+            ? getItemImagePath(reward.file)
+            : reward.file;
+
+        overlay.innerHTML = `
+            <div class="meat-reward-preview-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(reward.name)}の報酬詳細">
+                <div class="meat-reward-preview-title">${reward.amount.toLocaleString()}個達成報酬</div>
+                <img
+                    class="meat-reward-preview-image"
+                    src="${escapeHtml(imagePath)}"
+                    alt="${escapeHtml(reward.name)}"
+                    onerror="this.style.opacity='.25';"
+                >
+                <div class="meat-reward-preview-name">${escapeHtml(reward.name)}</div>
+                <div class="meat-reward-preview-meta">${escapeHtml(getRewardTypeLabel(reward.type))}</div>
+                <div class="meat-reward-preview-status">${escapeHtml(status)}</div>
+                <button type="button" class="meat-reward-preview-close" onclick="hideMeatRewardPreview()">閉じる</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+    }
+
+    function hideMeatRewardPreview() {
+        const overlay = document.getElementById('meat-reward-preview-overlay');
+        if (overlay) overlay.remove();
+    }
+
     function renderStampRally() {
         const stampCount = getStampCount();
         const nextStampNumber = stampCount < 15 ? stampCount + 1 : null;
@@ -1116,6 +1253,7 @@
             cells.push(`
                 <div class="meat-stamp-cell ${cls}${rewardPoint ? ' reward-point' : ''}" title="${amount.toLocaleString()}個${reward ? `：${escapeHtml(reward.name)}` : ''}">
                     ${isNext && !rewardPending ? '<span class="meat-stamp-next-tag">NEXT</span>' : ''}
+                    ${reward ? `<button class="meat-stamp-gift-button" type="button" aria-label="${escapeHtml(reward.name)}の報酬を確認" title="報酬を見る" onclick="event.stopPropagation(); showMeatRewardPreview(${reward.amount})">🎁</button>` : ''}
                     <img
                         class="meat-stamp-image"
                         src="${typeof getItemImagePath === 'function' ? getItemImagePath(MEAT_STAMP_IMAGE) : MEAT_STAMP_IMAGE}"
@@ -1600,6 +1738,8 @@
     window.openMeatMode = openMeatMode;
     window.showMeatHelp = showMeatHelp;
     window.hideMeatHelp = hideMeatHelp;
+    window.showMeatRewardPreview = showMeatRewardPreview;
+    window.hideMeatRewardPreview = hideMeatRewardPreview;
     window.replayMeatFind = replayMeatFind;
     window.setMeatPanelView = setMeatPanelView;
     window.closeMeatMode = closeMeatMode;
